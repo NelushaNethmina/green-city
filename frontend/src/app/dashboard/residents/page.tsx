@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Skeleton } from "@/components/ui/Skeleton";
 
+
 // Dynamic load of single resident map
 const ResidentLocationMap = dynamic(
   () => import("@/components/dashboard/ResidentLocationMap"),
@@ -213,11 +214,7 @@ export default function ResidentsPage() {
       header: "Phone Number",
       sortable: true,
     },
-    {
-      key: "ward",
-      header: "Ward Sector",
-      sortable: true,
-    },
+    
     {
       key: "status",
       header: "Status",
@@ -311,6 +308,9 @@ export default function ResidentsPage() {
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-xl font-extrabold text-foreground">Resident Directory</h2>
+          <p className="text-xs text-muted-text mt-0.5">
+            Audit registered municipal app users, update house locations, or lock suspended profiles.
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <Button onClick={handleExportCSV} variant="outline" size="sm" className="text-xs shrink-0 cursor-pointer">
@@ -484,64 +484,7 @@ export default function ResidentsPage() {
         </div>
       </Modal>
 
-      {/* Modal Dialog: Collection History log */}
-      <Modal
-        isOpen={isHistoryOpen}
-        onClose={() => {
-          setIsHistoryOpen(false);
-          setSelectedResident(null);
-        }}
-        title={`${selectedResident?.name}'s Collection Log History`}
-        className="max-w-2xl"
-      >
-        <div className="space-y-4">
-          <p className="text-[11px] text-muted-text">
-            Below is the full history of garbage dispatch requests reported by this citizen.
-          </p>
-          {residentHistory.length === 0 ? (
-            <div className="py-10 text-center text-xs font-bold text-muted-text bg-card-bg/5 border border-dashed border-card-border rounded-2xl">
-              No collection logs found for this resident.
-            </div>
-          ) : (
-            <div className="max-h-[300px] overflow-y-auto border border-card-border rounded-2xl overflow-hidden text-[10px] font-bold">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-muted-bg/50 border-b border-card-border text-muted-text uppercase text-[8px] tracking-wider">
-                    <th className="p-3">Pickup Address</th>
-                    <th className="p-3">Waste Category</th>
-                    <th className="p-3">Status</th>
-                    <th className="p-3">Recorded Weight</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-card-border text-foreground">
-                  {residentHistory.map((h) => (
-                    <tr key={h.id} className="hover:bg-muted-bg/10">
-                      <td className="p-3 font-medium">{h.address}</td>
-                      <td className="p-3">{h.wasteType}</td>
-                      <td className="p-3">
-                        <span className={`px-2 py-0.5 rounded-full text-[8px] ${
-                          h.status === "Collected" ? "bg-green-500/10 text-green-500" : h.status === "Assigned" ? "bg-blue-500/10 text-blue-500" : "bg-red-500/10 text-red-500"
-                        }`}>
-                          {h.status}
-                        </span>
-                      </td>
-                      <td className="p-3">{h.weightKg ? `${h.weightKg} Kg` : "-"}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-          <div className="flex justify-end pt-3 border-t border-card-border">
-            <Button variant="ghost" size="sm" onClick={() => {
-              setIsHistoryOpen(false);
-              setSelectedResident(null);
-            }}>
-              Close History
-            </Button>
-          </div>
-        </div>
-      </Modal>
+      
 
       {/* Confirm Dialog: Delete Resident */}
       <ConfirmDialog
