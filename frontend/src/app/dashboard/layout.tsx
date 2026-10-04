@@ -10,7 +10,6 @@ import {
   Trash2,
   Menu,
   X,
-  Bell,
   Sun,
   Moon,
   ChevronLeft,
@@ -32,7 +31,6 @@ const menuItems = [
   { href: "/dashboard/collections", label: "Waste Collection", icon: Trash2 },
   { href: "/dashboard/route-management", label: "Route Management", icon: Map },
   { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
-  { href: "/dashboard/notifications", label: "Notifications", icon: Bell },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
@@ -96,9 +94,9 @@ export default function DashboardLayout({
         {/* Sidebar Header Logo */}
         <div className="h-16 flex items-center justify-between px-4 border-b border-sidebar-border">
           <div className="flex items-center gap-2 overflow-hidden">
-            <img src="/logo_new.png" className="h-8.5 w-8.5 object-contain shrink-0" alt="Green City Logo" />
+            <img src="/logo_new.png" className="h-19 w-8.5 object-contain shrink-0" alt="Green City Logo" />
             {!isSidebarCollapsed && (
-              <span className="text-[13px] font-black uppercase tracking-tight text-foreground whitespace-nowrap">
+              <span className="text-[20px] font-black uppercase tracking-tight text-foreground whitespace-nowrap">
                 Green <span className="text-primary-green">City</span>
               </span>
             )}
@@ -286,7 +284,7 @@ export default function DashboardLayout({
             </nav>
           </div>
 
-          {/* Right: Notification, Theme, Profile */}
+          {/* Right: Theme, Profile */}
           <div className="flex items-center gap-3">
             {/* Theme switcher */}
             <button
@@ -299,12 +297,6 @@ export default function DashboardLayout({
               ) : (
                 <Sun className="h-4 w-4" />
               )}
-            </button>
-
-            {/* Notification alert */}
-            <button className="p-2 rounded-full border border-card-border bg-card-bg text-muted-text hover:text-foreground hover:bg-muted-bg/50 transition relative cursor-pointer">
-              <Bell className="h-4 w-4" />
-              <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-primary-green animate-pulse" />
             </button>
 
             {/* Quick Profile */}
