@@ -18,6 +18,8 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 
 interface DriverFormData {
+  email: string;
+  password: string;
   name: string;
   nic: string;
   phone: string;
@@ -46,6 +48,8 @@ export default function DriversPage() {
     formState: { errors },
   } = useForm<DriverFormData>({
     defaultValues: {
+      email: "", 
+      password: "",
       name: "",
       nic: "",
       phone: "",
@@ -85,6 +89,8 @@ export default function DriversPage() {
     setEditingDriver(null);
     loadTrucks();
     reset({
+      email: "",
+      password: "",
       name: "",
       nic: "",
       phone: "",
@@ -322,6 +328,27 @@ export default function DriversPage() {
               required: "Phone number is required.",
             })}
           />
+          {!editingDriver && (
+            <>
+              <Input
+                label="Email Address (app login) *"
+                type="email"
+                placeholder="driver@greencity.com"
+                error={errors.email?.message}
+                {...register("email", { required: "Email is required." })}
+              />
+              <Input
+                label="Password (app login) *"
+                type="password"
+                placeholder="••••••••"
+                error={errors.password?.message}
+                {...register("password", {
+                  required: "Password is required.",
+                  minLength: { value: 8, message: "Password must be at least 8 characters." },
+                })}
+              />
+            </>
+          )}
           <Select
             label="Truck Number *"
             options={[

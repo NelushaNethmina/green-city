@@ -35,7 +35,7 @@ import {
   Legend
 } from "recharts";
 
-import { useGreenCityStore, Driver, ResidentUser, DailyCollection, RouteAssignment } from "@/store/greenCityStore";
+import { useGreenCityStore, Driver, ResidentUser, DailyCollection, RouteAssignment, BinLocation } from "@/store/greenCityStore";
 import { driverService } from "@/services/driver.service";
 import { residentService } from "@/services/resident.service";
 import { collectionService } from "@/services/collection.service";
@@ -66,6 +66,8 @@ const LiveTrackingMap = dynamic(
 
 // Form Interfaces for Quick Actions
 interface QuickDriverForm {
+  email: string; 
+  password: string;
   name: string;
   nic: string;
   phone: string;
@@ -122,6 +124,21 @@ export default function OverviewPage() {
     }
   };
 
+    const mapBins = useMemo<BinLocation[]>(() => {
+    return requests
+      .filter((r) => typeof r.latitude === "number" && typeof r.longitude === "number")
+      .map((r) => ({
+        id: r.id,
+        reporterName: r.residentName,
+        address: r.address,
+        latitude: r.latitude,
+        longitude: r.longitude,
+        wasteType: r.wasteType,
+        status: r.status,
+        createdAt: r.createdAt,
+      }));
+  }, [requests]);
+
   useEffect(() => {
     loadAll();
   }, []);
@@ -166,6 +183,8 @@ export default function OverviewPage() {
    const onAddDriver = async (data: QuickDriverForm) => {
     try {
       await driverService.create({
+        email: data.email, 
+        password: data.password,
         name: data.name,
         nic: data.nic,
         phone: data.phone,
@@ -294,7 +313,7 @@ export default function OverviewPage() {
           </div>
         </div>
         <div className="w-full h-[400px]">
-          <LiveTrackingMap bins={requests} drivers={drivers} />
+          <LiveTrackingMap bins={mapBins} drivers={drivers} />
         </div>
       </div>
 

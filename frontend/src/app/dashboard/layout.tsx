@@ -96,9 +96,9 @@ export default function DashboardLayout({
         {/* Sidebar Header Logo */}
         <div className="h-16 flex items-center justify-between px-4 border-b border-sidebar-border">
           <div className="flex items-center gap-2 overflow-hidden">
-            <img src="/logo_new.png" className="h-19 w-8.5 object-contain shrink-0" alt="Green City Logo" />
+            <img src="/logo_new.png" className="h-8.5 w-8.5 object-contain shrink-0" alt="Green City Logo" />
             {!isSidebarCollapsed && (
-              <span className="text-[20px] font-black uppercase tracking-tight text-foreground whitespace-nowrap">
+              <span className="text-[13px] font-black uppercase tracking-tight text-foreground whitespace-nowrap">
                 Green <span className="text-primary-green">City</span>
               </span>
             )}

@@ -47,31 +47,30 @@ export const driverService = {
     return drivers.find((d) => d.id === id);
   },
 
-  create: async (driver: Omit<Driver, "id">): Promise<void> => {
-    const names = driver.name.split(" ");
-    const email = driver.nic + "@greencity.lk";
-    await axios.post(
-      url + "/users",
-      {
-        nic: driver.nic,
-        email: email,
-        firstName: names[0],
-        lastName: names.slice(1).join(" ") || "-",
-        password: "Driver@123",
-        phone: driver.phone,
-        role: "driver",
-        status: driver.status === "Online" ? "active" : "inactive",
-      },
-      config()
-    );
-    if (driver.vehicleNo && driver.vehicleNo !== "-") {
-      try {
-        await axios.put(
-          url + "/vechicle/" + driver.vehicleNo + "/assign-driver",
-          { email: email },
-          config()
-        );
-      } catch {}
+    create: async (driver: Omit<Driver, "id"> & { email: string; password: string }): Promise<void> => {
+    if (!driver.vehicleNo || driver.vehicleNo === "-") {
+      throw new Error("Please select a truck for the driver.");
+    }
+
+    const names = driver.name.trim().split(" ");
+
+    try {
+      await axios.post(
+        url + "/users/driver",
+        {
+          nic: driver.nic,
+          email: driver.email,
+          password: driver.password,
+          firstName: names[0],
+          lastName: names.slice(1).join(" ") || "-",
+          phone: driver.phone,
+          status: driver.status === "Online" ? "active" : "inactive",
+          vechicleNumber: driver.vehicleNo,
+        },
+        config()
+      );
+    } catch (err) {
+      throw new Error(errorMessage(err, "Failed to create driver."));
     }
   },
 
