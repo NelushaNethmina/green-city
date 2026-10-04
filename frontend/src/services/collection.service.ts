@@ -1,10 +1,46 @@
+import axios from "axios";
 import { useGreenCityStore, BinLocation, WasteCategory, DailyCollection } from "@/store/greenCityStore";
+
+const url = "http://localhost:5000/dailyWasteCollection";
+
+function config() {
+  return { headers: { Authorization: "Bearer " + localStorage.getItem("token") } };
+}
+
+const categoryMap: any = {
+  "food waste": "food Waste",
+  "plastic": "Plastic",
+  "polythene": "Polythene",
+  "paper": "paper",
+  "glass": "glass",
+};
+
+function toBackendCategory(name: string) {
+  return categoryMap[name.toLowerCase()] || name;
+}
+
+function toDisplayCategory(name: string) {
+  return name.replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function toDailyCollection(c: any): DailyCollection {
+  return {
+    id: c.collectionNumber,
+    date: String(c.collectionDate).slice(0, 10),
+    category: toDisplayCategory(c.category),
+    weightKg: c.totalWeight,
+    remarks: c.note,
+    recordedBy: c.recordedBy ? c.recordedBy.firstName + " " + c.recordedBy.lastName : "Council Admin",
+    createdAt: c.createdAt,
+    updatedAt: c.updatedAt,
+  };
+}
 
 export const collectionService = {
   getAllBins: async (): Promise<BinLocation[]> => {
     return useGreenCityStore.getState().bins;
   },
-  
+
   createBin: async (bin: Omit<BinLocation, "id" | "createdAt">): Promise<void> => {
     useGreenCityStore.getState().addBin(bin);
   },
@@ -25,7 +61,6 @@ export const collectionService = {
     useGreenCityStore.getState().collectBin(binId, weightKg);
   },
 
-  // Categories Actions
   getCategories: async (): Promise<WasteCategory[]> => {
     return useGreenCityStore.getState().categories;
   },
@@ -35,16 +70,13 @@ export const collectionService = {
   },
 
   renameCategory: async (id: string, newName: string): Promise<void> => {
-    // Rename in the categories list. Uses store's update if available or patch locally.
     const store = useGreenCityStore.getState();
     const updated = store.categories.map((c) =>
       c.id === id ? { ...c, name: newName } : c
     );
-    // Persist via localStorage directly since the store doesn't expose renameCategory yet
     if (typeof window !== "undefined") {
       localStorage.setItem("green_city_categories", JSON.stringify(updated));
     }
-    // Force a re-render by triggering an addCategory no-op via zustand internal
     useGreenCityStore.setState({ categories: updated });
   },
 
@@ -52,21 +84,40 @@ export const collectionService = {
     useGreenCityStore.getState().deleteCategory(id);
   },
 
-  // Daily Collections records
   getDailyCollections: async (): Promise<DailyCollection[]> => {
-    return useGreenCityStore.getState().dailyCollections;
+    const res = await axios.get(url, config());
+    return res.data.map(toDailyCollection);
   },
 
   createDailyCollection: async (collection: Omit<DailyCollection, "id">): Promise<void> => {
-    useGreenCityStore.getState().addDailyCollection(collection);
+    await axios.post(
+      url,
+      {
+        collectionDate: collection.date,
+        category: toBackendCategory(collection.category),
+        totalWeight: collection.weightKg,
+        note: collection.remarks || "",
+      },
+      config()
+    );
   },
 
   updateDailyCollection: async (id: string, updates: Partial<DailyCollection>): Promise<void> => {
-    useGreenCityStore.getState().updateDailyCollection(id, updates);
+    const res = await axios.get(url + "/" + id, config());
+    const c = res.data;
+    await axios.put(
+      url + "/" + id,
+      {
+        collectionDate: updates.date ?? c.collectionDate,
+        category: updates.category ? toBackendCategory(updates.category) : c.category,
+        totalWeight: updates.weightKg ?? c.totalWeight,
+        note: updates.remarks ?? c.note,
+      },
+      config()
+    );
   },
 
   deleteDailyCollection: async (id: string): Promise<void> => {
-    useGreenCityStore.getState().deleteDailyCollection(id);
-  }
+    await axios.delete(url + "/" + id, config());
+  },
 };
-

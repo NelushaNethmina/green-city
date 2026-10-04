@@ -1,23 +1,76 @@
-import { useGreenCityStore, ResidentUser } from "@/store/greenCityStore";
+import axios from "axios";
+import { ResidentUser } from "@/store/greenCityStore";
+
+const url = "http://localhost:5000/users";
+
+function config() {
+  return { headers: { Authorization: "Bearer " + localStorage.getItem("token") } };
+}
+
+function toResident(u: any): ResidentUser {
+  return {
+    id: u._id,
+    name: u.firstName + " " + u.lastName,
+    email: u.email,
+    phone: u.phone,
+    address: u.address || "",
+    ward: u.ward || "-",
+    status: u.isBlock ? "Suspended" : "Active",
+    createdAt: u.createdAt,
+    latitude: u.currentLocation?.latitude ?? 0,
+    longitude: u.currentLocation?.longitude ?? 0,
+  };
+}
 
 export const residentService = {
   getAll: async (): Promise<ResidentUser[]> => {
-    return useGreenCityStore.getState().residents;
+    const res = await axios.get(url, config());
+    return res.data.filter((u: any) => u.role === "resident").map(toResident);
   },
 
   getById: async (id: string): Promise<ResidentUser | undefined> => {
-    return useGreenCityStore.getState().residents.find((r) => r.id === id);
+    const residents = await residentService.getAll();
+    return residents.find((r) => r.id === id);
   },
 
   create: async (resident: Omit<ResidentUser, "id" | "createdAt">): Promise<void> => {
-    useGreenCityStore.getState().addResident(resident);
+    const names = resident.name.split(" ");
+    await axios.post(
+      url,
+      {
+        nic: "RES-" + Date.now(),
+        email: resident.email,
+        firstName: names[0],
+        lastName: names.slice(1).join(" ") || "-",
+        password: "Resident@123",
+        phone: resident.phone,
+        address: resident.address,
+        role: "resident",
+        isBlock: resident.status === "Suspended",
+        currentLocation: { latitude: resident.latitude, longitude: resident.longitude },
+      },
+      config()
+    );
   },
 
   update: async (id: string, updates: Partial<ResidentUser>): Promise<void> => {
-    useGreenCityStore.getState().updateResident(id, updates);
+    const body: any = {};
+    if (updates.name) {
+      const names = updates.name.split(" ");
+      body.firstName = names[0];
+      body.lastName = names.slice(1).join(" ") || "-";
+    }
+    if (updates.email) body.email = updates.email;
+    if (updates.phone) body.phone = updates.phone;
+    if (updates.address !== undefined) body.address = updates.address;
+    if (updates.status) body.isBlock = updates.status === "Suspended";
+    if (updates.latitude !== undefined && updates.longitude !== undefined) {
+      body.currentLocation = { latitude: updates.latitude, longitude: updates.longitude };
+    }
+    await axios.put(url + "/" + id, body, config());
   },
 
   delete: async (id: string): Promise<void> => {
-    useGreenCityStore.getState().deleteResident(id);
+    await axios.delete(url + "/" + id, config());
   },
 };

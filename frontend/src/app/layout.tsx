@@ -28,7 +28,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning className="h-full scroll-smooth">
-      <body className="min-h-full flex flex-col bg-background text-foreground antialiased selection:bg-primary-green selection:text-white">
+      <body suppressHydrationWarning className="min-h-full flex flex-col bg-background text-foreground antialiased selection:bg-primary-green selection:text-white">
         <QueryProvider>
           <ThemeProvider>
             {children}

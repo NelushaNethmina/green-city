@@ -18,6 +18,7 @@ import { Select } from "@/components/ui/Select";
 
 interface RouteFormData {
   driverId: string;
+  routeName: string;
   date: string;
   category: string;
   estimatedDistanceKm: string;
@@ -30,11 +31,9 @@ export default function RouteManagementPage() {
   const [categories, setCategories] = useState<WasteCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Modals state
   const [isOpen, setIsOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
-  // Focus Context states
   const [editingRoute, setEditingRoute] = useState<RouteAssignment | null>(null);
   const [selectedRoute, setSelectedRoute] = useState<RouteAssignment | null>(null);
 
@@ -47,6 +46,7 @@ export default function RouteManagementPage() {
   } = useForm<RouteFormData>({
     defaultValues: {
       driverId: "",
+      routeName: "",
       date: new Date().toISOString().split("T")[0],
       category: "Food Waste",
       estimatedDistanceKm: "12.5",
@@ -77,7 +77,8 @@ export default function RouteManagementPage() {
   const handleOpenAdd = () => {
     setEditingRoute(null);
     reset({
-      driverId: drivers[0]?.id || "",
+      driverId: drivers.find((d) => d.status === "Online" && d.vehicleNo && d.vehicleNo !== "-")?.id || "",
+      routeName: "",
       date: new Date().toISOString().split("T")[0],
       category: categories[0]?.name || "Food Waste",
       estimatedDistanceKm: "12.5",
@@ -89,6 +90,7 @@ export default function RouteManagementPage() {
   const handleOpenEdit = (route: RouteAssignment) => {
     setEditingRoute(route);
     setValue("driverId", route.driverId);
+    setValue("routeName", route.routeName || "");
     setValue("date", route.date);
     setValue("category", route.category);
     setValue("estimatedDistanceKm", String(route.estimatedDistanceKm));
@@ -112,8 +114,8 @@ export default function RouteManagementPage() {
       setIsOpen(false);
       reset();
       loadAll();
-    } catch {
-      toast.error("Failed to update route assignments.");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update route assignments.");
     }
   };
 
@@ -122,8 +124,8 @@ export default function RouteManagementPage() {
       await routeService.update(route.id, { status: "Completed" });
       toast.success("Route marked as Completed.");
       loadAll();
-    } catch {
-      toast.error("Failed to update route status.");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update route status.");
     }
   };
 
@@ -132,24 +134,24 @@ export default function RouteManagementPage() {
     try {
       await routeService.delete(selectedRoute.id);
       toast.success("Route assignment deleted.");
+      loadAll();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to delete route.");
+    } finally {
       setIsDeleteOpen(false);
       setSelectedRoute(null);
-      loadAll();
-    } catch {
-      toast.error("Failed to delete route.");
     }
   };
 
   const activeDriverOptions = useMemo(() => {
     return drivers
-      .filter((d) => d.status === "Online")
+      .filter((d) => d.status === "Online" && d.vehicleNo && d.vehicleNo !== "-")
       .map((d) => ({
         value: d.id,
         label: `${d.name} (${d.vehicleNo})`,
       }));
   }, [drivers]);
 
-  // Aggregate active routes distance
   const totalActiveDistance = useMemo(() => {
     const active = routes.filter((r) => r.status === "Active" || r.status === "Pending");
     return active.reduce((sum, r) => sum + r.estimatedDistanceKm, 0).toFixed(1);
@@ -164,11 +166,17 @@ export default function RouteManagementPage() {
         const driver = drivers.find((d) => d.id === item.driverId);
         return (
           <div className="flex flex-col">
-            <span className="font-bold text-foreground">{driver ? driver.name : "Unknown Driver"}</span>
+            <span className="font-bold text-foreground">{driver ? driver.name : "Deleted Driver"}</span>
             <span className="text-[9px] text-muted-text uppercase font-semibold">{driver?.vehicleNo || "N/A"}</span>
           </div>
         );
       },
+    },
+    {
+      key: "routeName",
+      header: "Route",
+      sortable: true,
+      render: (item) => <span className="font-semibold">{item.routeName || "-"}</span>,
     },
     {
       key: "date",
@@ -247,7 +255,6 @@ export default function RouteManagementPage() {
 
   return (
     <div className="flex flex-col gap-6 w-full">
-      {/* Header bar */}
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-xl font-extrabold text-foreground">Route Management</h2>
@@ -261,7 +268,6 @@ export default function RouteManagementPage() {
         </Button>
       </div>
 
-      {/* Aggregate Metric Widget */}
       <div className="p-4 bg-primary-green/5 border border-primary-green/10 rounded-2xl flex items-center gap-3">
         <div className="p-3 bg-primary-green/10 text-primary-green rounded-xl">
           <Navigation className="h-5 w-5 animate-pulse" />
@@ -272,7 +278,6 @@ export default function RouteManagementPage() {
         </div>
       </div>
 
-      {/* Table wrapper */}
       <div className="bg-card-bg border border-card-border rounded-3xl p-5 shadow-sm">
         {isLoading ? (
           <div className="py-20 flex justify-center items-center gap-2 text-xs font-bold text-muted-text">
@@ -283,8 +288,8 @@ export default function RouteManagementPage() {
           <Table
             columns={columns}
             data={routes}
-            searchKeys={["category", "driverId"]}
-            searchPlaceholder="Search by waste class..."
+            searchKeys={["category", "driverId", "routeName"]}
+            searchPlaceholder="Search by route or waste class..."
             emptyTitle="No route dispatches scheduled"
             emptyDescription="Click Assign Route to schedule a truck collection."
             itemsPerPage={6}
@@ -292,7 +297,6 @@ export default function RouteManagementPage() {
         )}
       </div>
 
-      {/* Modal Dialog: Add/Edit Route */}
       <Modal
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
@@ -301,10 +305,16 @@ export default function RouteManagementPage() {
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <Select
-            label="Select Active Driver *"
+            label="Select Driver (with assigned truck) *"
             options={activeDriverOptions}
             error={errors.driverId?.message}
             {...register("driverId", { required: "Driver selection is required." })}
+          />
+          <Input
+            label="Route Name *"
+            placeholder="Sirimalgoda Road"
+            error={errors.routeName?.message}
+            {...register("routeName", { required: "Route name is required." })}
           />
           <Input
             type="date"
@@ -344,7 +354,6 @@ export default function RouteManagementPage() {
         </form>
       </Modal>
 
-      {/* Confirm Dialog: Delete Route */}
       <ConfirmDialog
         isOpen={isDeleteOpen}
         onClose={() => setIsDeleteOpen(false)}

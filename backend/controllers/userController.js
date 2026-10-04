@@ -2,6 +2,8 @@ import bcrypt from "bcrypt"
 import User from "../model/user.js"
 import jwt from "jsonwebtoken"
 import { response } from "express"
+import Schedule from "../model/Schedule.js"
+import Vechicle from "../model/vechicle.js"
 
 
 
@@ -200,6 +202,9 @@ export async function updateUserStatus(req,res){
     const isBlock = req.body.isBlock
 
     try{
+        if(req.body.password){
+            req.body.password = bcrypt.hashSync(req.body.password, 10)
+        }
         await User.updateOne({email : email}, {isBlock:isBlock})
         res.json({
             message : "User Status Changed"
@@ -219,4 +224,71 @@ export function isAdmin(req){
         return false
     }
     return true
+}
+
+export async function updateUser(req,res){
+    if(!isAdmin(req)){
+        res.status(401).json({
+            message : "Unauthorized"
+        })
+        return
+    }
+
+    try{
+        await User.updateOne({_id : req.params.id}, req.body)
+        res.json({
+            message : "User Updated"
+        })
+    }
+    catch(err){
+        res.status(500).json({
+            message : "Error updating user",
+            error : err.message
+        })
+    }
+}
+
+export async function deleteUser(req,res){
+    if(!isAdmin(req)){
+        res.status(401).json({
+            message : "Unauthorized"
+        })
+        return
+    }
+
+    try{
+        const user = await User.findOne({_id : req.params.id})
+
+        if(user == null){
+            res.status(404).json({
+                message : "User not found"
+            })
+            return
+        }
+
+        if(user.role == "driver"){
+            const scheduleCount = await Schedule.countDocuments({driver : user._id})
+
+            if(scheduleCount > 0){
+                res.status(400).json({
+                    message : "Cannot delete driver " + user.firstName + " " + user.lastName + ". This driver is assigned to " + scheduleCount + " route(s). Delete the route assignment first."
+                })
+                return
+            }
+
+            await Vechicle.updateMany({assignedDriver : user._id}, {assignedDriver : null})
+        }
+
+        await User.deleteOne({_id : user._id})
+
+        res.json({
+            message : "User Deleted"
+        })
+    }
+    catch(err){
+        res.status(500).json({
+            message : "Error deleting user",
+            error : err.message
+        })
+    }
 }

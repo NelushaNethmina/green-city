@@ -34,7 +34,12 @@ import {
   Tooltip,
   Legend
 } from "recharts";
-import { useGreenCityStore } from "@/store/greenCityStore";
+
+import { useGreenCityStore, Driver, ResidentUser, DailyCollection, RouteAssignment } from "@/store/greenCityStore";
+import { driverService } from "@/services/driver.service";
+import { residentService } from "@/services/resident.service";
+import { collectionService } from "@/services/collection.service";
+import { routeService } from "@/services/route.service";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Button } from "@/components/ui/Button";
@@ -90,6 +95,31 @@ interface QuickNotificationForm {
 
 export default function OverviewPage() {
   const store = useGreenCityStore();
+    const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [residents, setResidents] = useState<ResidentUser[]>([]);
+  const [dailyCollections, setDailyCollections] = useState<DailyCollection[]>([]);
+  const [routes, setRoutes] = useState<RouteAssignment[]>([]);
+
+  const loadAll = async () => {
+    try {
+      const [d, r, c, rt] = await Promise.all([
+        driverService.getAll(),
+        residentService.getAll(),
+        collectionService.getDailyCollections(),
+        routeService.getAll(),
+      ]);
+      setDrivers(d);
+      setResidents(r);
+      setDailyCollections(c);
+      setRoutes(rt);
+    } catch {
+      toast.error("Failed to load dashboard data.");
+    }
+  };
+
+  useEffect(() => {
+    loadAll();
+  }, []);
 
   // Modals state for Quick Actions
   const [modalType, setModalType] = useState<"driver" | "waste" | "route" | "notification" | null>(null);
@@ -103,13 +133,13 @@ export default function OverviewPage() {
   // Metrics calculation
   const metrics = useMemo(() => {
     const todayStr = new Date().toISOString().split('T')[0];
-    const todayCols = store.dailyCollections.filter((c) => c.date === todayStr);
+    const todayCols = dailyCollections.filter((c) => c.date === todayStr);
     const todayWeight = todayCols.reduce((sum, c) => sum + c.weightKg, 0);
 
-    const pending = store.bins.filter((b) => b.status === "Pending").length;
-    const completed = store.bins.filter((b) => b.status === "Collected").length;
-    const residentCount = store.residents.length;
-    const driverCount = store.drivers.length;
+    const pending = routes.filter((r) => r.status === "Pending").length;
+    const completed = routes.filter((r) => r.status === "Completed").length;
+    const residentCount = residents.length;
+    const driverCount = drivers.length;
 
     return {
       todayWeight: todayWeight.toFixed(1),
@@ -118,61 +148,76 @@ export default function OverviewPage() {
       residentCount,
       driverCount,
     };
-  }, [store.bins, store.residents, store.drivers, store.dailyCollections]);
+  }, [store.bins, residents, drivers, dailyCollections]);
 
   // Today's schedule assignments list
   const todaysSchedule = useMemo(() => {
     const todayStr = new Date().toISOString().split('T')[0];
-    return store.routeAssignments.filter((r) => r.date === todayStr);
-  }, [store.routeAssignments]);
+    return routes.filter((r) => r.date === todayStr);
+  }, [routes]);
 
   // Quick Action Submissions
-  const onAddDriver = (data: QuickDriverForm) => {
-    store.addDriver({
-      name: data.name,
-      nic: data.nic,
-      phone: data.phone,
-      vehicleNo: data.vehicleNo,
-      status: data.status,
-      currentWard: data.currentWard,
-    });
-    toast.success("Driver registered successfully via Quick Action.");
-    setModalType(null);
-    driverForm.reset();
+   const onAddDriver = async (data: QuickDriverForm) => {
+    try {
+      await driverService.create({
+        name: data.name,
+        nic: data.nic,
+        phone: data.phone,
+        vehicleNo: data.vehicleNo,
+        status: data.status,
+        currentWard: data.currentWard,
+      });
+      toast.success("Driver registered successfully via Quick Action.");
+      setModalType(null);
+      driverForm.reset();
+      loadAll();
+    } catch {
+      toast.error("Failed to register driver.");
+    }
   };
 
-  const onAddWaste = (data: QuickWasteForm) => {
+  const onAddWaste = async (data: QuickWasteForm) => {
     const w = parseFloat(data.weightKg);
     if (isNaN(w) || w <= 0) {
       toast.error("Please enter a valid weight quantity.");
       return;
     }
-    const nowStr = new Date().toISOString();
-    store.addDailyCollection({
-      date: data.date,
-      category: data.category,
-      weightKg: w,
-      recordedBy: "Council Admin",
-      createdAt: nowStr,
-      updatedAt: nowStr,
-    });
-    toast.success("Daily waste record logged successfully.");
-    setModalType(null);
-    wasteForm.reset();
+    try {
+      const nowStr = new Date().toISOString();
+      await collectionService.createDailyCollection({
+        date: data.date,
+        category: data.category,
+        weightKg: w,
+        recordedBy: "Council Admin",
+        createdAt: nowStr,
+        updatedAt: nowStr,
+      });
+      toast.success("Daily waste record logged successfully.");
+      setModalType(null);
+      wasteForm.reset();
+      loadAll();
+    } catch {
+      toast.error("Failed to log waste record.");
+    }
   };
 
-  const onAssignRoute = (data: QuickRouteForm) => {
+  const onAssignRoute = async (data: QuickRouteForm) => {
     const dist = parseFloat(data.estimatedDistanceKm);
-    store.addRouteAssignment({
-      driverId: data.driverId,
-      date: data.date,
-      category: data.category,
-      estimatedDistanceKm: isNaN(dist) ? 12.5 : dist,
-      status: "Pending",
-    });
-    toast.success("New route dispatch assigned successfully.");
-    setModalType(null);
-    routeForm.reset();
+    try {
+      await routeService.create({
+        driverId: data.driverId,
+        date: data.date,
+        category: data.category,
+        estimatedDistanceKm: isNaN(dist) ? 12.5 : dist,
+        status: "Pending",
+      });
+      toast.success("New route dispatch assigned successfully.");
+      setModalType(null);
+      routeForm.reset();
+      loadAll();
+    } catch {
+      toast.error("Failed to assign route.");
+    }
   };
 
   const onSendNotification = (data: QuickNotificationForm) => {
@@ -187,7 +232,7 @@ export default function OverviewPage() {
     ntfForm.reset();
   };
 
-  // Recharts Seed Aggregates derived from live store.dailyCollections
+  // Recharts Seed Aggregates derived from live dailyCollections
   const trendData = useMemo(() => {
     const last7Days = Array.from({ length: 7 }).map((_, i) => {
       const d = new Date();
@@ -196,17 +241,17 @@ export default function OverviewPage() {
     });
 
     return last7Days.map((dateStr) => {
-      const dayCols = store.dailyCollections.filter((c) => c.date === dateStr);
+      const dayCols = dailyCollections.filter((c) => c.date === dateStr);
       const totalWeight = dayCols.reduce((sum, c) => sum + c.weightKg, 0);
       const dateObj = new Date(dateStr);
       const name = dateObj.toLocaleDateString("en-US", { weekday: "short" });
       return { name, weight: totalWeight };
     });
-  }, [store.dailyCollections]);
+  }, [dailyCollections]);
 
   const categoryDistribution = useMemo(() => {
     const catTotals: Record<string, number> = {};
-    store.dailyCollections.forEach((c) => {
+    dailyCollections.forEach((c) => {
       catTotals[c.category] = (catTotals[c.category] || 0) + c.weightKg;
     });
     const list = Object.entries(catTotals).map(([name, value]) => ({ name, value }));
@@ -220,7 +265,7 @@ export default function OverviewPage() {
       { name: "Paper", value: 0 },
       { name: "Glass", value: 0 },
     ];
-  }, [store.dailyCollections]);
+  }, [dailyCollections]);
 
   const colorsDistribution = ["#0F5C3B", "#3B82F6", "#F59E0B", "#EF4444", "#8BC34A"];
 
@@ -243,7 +288,7 @@ export default function OverviewPage() {
           </div>
         </div>
         <div className="w-full h-[400px]">
-          <LiveTrackingMap bins={store.bins} drivers={store.drivers} />
+          <LiveTrackingMap bins={store.bins} drivers={drivers} />
         </div>
       </div>
 
@@ -385,7 +430,7 @@ export default function OverviewPage() {
               </div>
             ) : (
               todaysSchedule.map((sch) => {
-                const driver = store.drivers.find((d) => d.id === sch.driverId);
+                const driver = drivers.find((d) => d.id === sch.driverId);
                 return (
                   <div key={sch.id} className="flex items-center justify-between p-2.5 rounded-xl border border-card-border/80 bg-card-bg/20 text-[12px] font-bold">
                     <div className="flex items-center gap-2">
@@ -565,7 +610,7 @@ export default function OverviewPage() {
         <form onSubmit={routeForm.handleSubmit(onAssignRoute)} className="space-y-4">
           <Select
             label="Select Available Driver *"
-            options={store.drivers.filter(d => d.status === "Online").map((d) => ({ value: d.id, label: `${d.name} (${d.vehicleNo})` }))}
+            options={drivers.filter(d => d.status === "Online").map((d) => ({ value: d.id, label: `${d.name} (${d.vehicleNo})` }))}
             {...routeForm.register("driverId", { required: true })}
           />
           <Input type="date" label="Assignment Date *" {...routeForm.register("date", { required: true })} />

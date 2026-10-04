@@ -61,6 +61,7 @@ export interface WasteCategory {
 export interface RouteAssignment {
   id: string;
   driverId: string;
+  routeName?: string;
   date: string;
   category: string;
   estimatedDistanceKm: number;

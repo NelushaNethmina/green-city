@@ -1,4 +1,4 @@
-// Mock Authentication Service
+import axios from "axios";
 export interface User {
   id: string;
   name: string;
@@ -33,34 +33,35 @@ export function deleteCookie(name: string) {
 }
 
 export const authService = {
-  login: async (email: string, password: string): Promise<{ token: string; user: User }> => {
-    // Check credentials (admin@greencity.lk / admin123)
-    if (email === "admin@greencity.lk" && password === "admin123") {
-      const mockToken = "mock-jwt-admin-token-xyz123";
-      const mockUser: User = {
-        id: "usr_admin_1",
-        name: "Council Administrator",
-        email: "admin@greencity.lk",
-        role: "admin",
-        profilePic: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=100&q=80",
+      login: async (email: string, password: string): Promise<{ token: string; user: User }> => {
+    try {
+      const res = await axios.post("http://localhost:5000/users/login", { email, password });
+      const token = res.data.token;
+      const payload = JSON.parse(atob(token.split(".")[1]));
+
+      const user: User = {
+        id: payload._id,
+        name: payload.firstName + " " + payload.lastName,
+        email: payload.email,
+        role: payload.role,
       };
 
-      setCookie("auth_token", mockToken);
-      setCookie("user_role", mockUser.role);
-      
-      // Store user details in localStorage
-      localStorage.setItem("user_profile", JSON.stringify(mockUser));
+      setCookie("auth_token", token);
+      setCookie("user_role", user.role);
+      localStorage.setItem("token", token);
+      localStorage.setItem("user_profile", JSON.stringify(user));
 
-      return { token: mockToken, user: mockUser };
+      return { token, user };
+    } catch (err: any) {
+      throw new Error(err?.response?.data?.message || "Invalid email or password.");
     }
-
-    throw new Error("Invalid administrator email or password.");
   },
 
-  logout: async (): Promise<void> => {
-    deleteCookie("auth_token");
-    deleteCookie("user_role");
-    localStorage.removeItem("user_profile");
+    logout: async (): Promise<void> => {
+      deleteCookie("auth_token");
+      deleteCookie("user_role");
+      localStorage.removeItem("token");
+      localStorage.removeItem("user_profile");
   },
 
   getCurrentUser: async (): Promise<User | null> => {

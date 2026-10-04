@@ -1,5 +1,6 @@
 import express from "express"
 import mongoose from "mongoose"
+import cors from "cors"
 import jwt from "jsonwebtoken"
 import userRouter from "./routes/userRouter.js"
 import vechicleRouter from "./routes/vechicleRouter.js"
@@ -7,11 +8,13 @@ import wasteReportRouter from "./routes/wasteReportRouter.js"
 import dailyWasteCollectionRouter from "./routes/dailyWasteCollectionRouter.js"
 import notificationRouter from "./routes/notificationRouter.js"
 import scheduleRouter from "./routes/scheduleRouter.js"
+import settingRouter from "./routes/settingRouter.js"
 
 
 const mongoURI = "mongodb+srv://admin:1234@cluster0.az5seek.mongodb.net/?appName=Cluster0"
 const app = express()
-app.use(express.json())
+app.use(cors())
+app.use(express.json({ limit : "2mb" }))
 
 
 app.use(
@@ -53,6 +56,7 @@ app.use("/wasteReport", wasteReportRouter)
 app.use("/dailyWasteCollection", dailyWasteCollectionRouter)
 app.use("/notification", notificationRouter)
 app.use("/schedule", scheduleRouter)
+app.use("/setting", settingRouter)
 
 mongoose.connect(mongoURI).then(
     ()=>{

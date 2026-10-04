@@ -40,6 +40,7 @@ interface CollectionFormData {
 export default function CollectionsPage() {
   const store = useGreenCityStore();
   const [categories, setCategories] = useState<WasteCategory[]>([]);
+  const [dailyCollections, setDailyCollections] = useState<DailyCollection[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Category Manager State
@@ -80,10 +81,20 @@ export default function CollectionsPage() {
     }
   };
 
-  useEffect(() => {
+    const loadCollections = async () => {
+    try {
+      const data = await collectionService.getDailyCollections();
+      setDailyCollections(data);
+    } catch {
+      toast.error("Failed to load daily collections.");
+    }
+  };
+
+    useEffect(() => {
     const init = async () => {
       setIsLoading(true);
       await loadCategories();
+      await loadCollections();
       setIsLoading(false);
     };
     init();
@@ -123,7 +134,7 @@ export default function CollectionsPage() {
     const uniqueDays = new Set<string>();
     let totalWeightAllTime = 0;
 
-    store.dailyCollections.forEach((c) => {
+    dailyCollections.forEach((c) => {
       const cWeight = c.weightKg;
       totalWeightAllTime += cWeight;
       uniqueDays.add(c.date);
@@ -162,7 +173,7 @@ export default function CollectionsPage() {
       mostCollected,
       avgDaily: Math.round(avgDaily).toLocaleString(),
     };
-  }, [store.dailyCollections]);
+  }, [dailyCollections]);
 
   // Handle Add Form Submission
   const handleAddCollection = async (data: CollectionFormData) => {
@@ -301,7 +312,7 @@ export default function CollectionsPage() {
     }
 
     // Check if category is used in dailyCollections
-    const isUsed = store.dailyCollections.some(
+    const isUsed = dailyCollections.some(
       (col) => col.category.toLowerCase() === cat.name.toLowerCase()
     );
     if (isUsed) {
@@ -320,7 +331,7 @@ export default function CollectionsPage() {
 
   // Dynamic Data preparation for Table (attaching month/year strings for built-in Table filters)
   const tableData = useMemo(() => {
-    return store.dailyCollections.map((c) => {
+    return dailyCollections.map((c) => {
       const dObj = new Date(c.date);
       const mVal = String(dObj.getMonth() + 1); // "1" - "12"
       const yVal = String(dObj.getFullYear()); // "2026"
@@ -330,7 +341,7 @@ export default function CollectionsPage() {
         year: yVal,
       };
     });
-  }, [store.dailyCollections]);
+  }, [dailyCollections]);
 
   // Dropdown list options
   const monthFilterOptions = [
@@ -350,7 +361,7 @@ export default function CollectionsPage() {
 
   const yearFilterOptions = useMemo(() => {
     const years = new Set<string>();
-    store.dailyCollections.forEach((c) => {
+    dailyCollections.forEach((c) => {
       years.add(c.date.split("-")[0]);
     });
     // Ensure current year is always an option
@@ -358,7 +369,7 @@ export default function CollectionsPage() {
     return Array.from(years)
       .sort((a, b) => b.localeCompare(a))
       .map((y) => ({ value: y, label: y }));
-  }, [store.dailyCollections]);
+  }, [dailyCollections]);
 
   const categoryFilterOptions = useMemo(() => {
     return categories.map((c) => ({ value: c.name, label: c.name }));

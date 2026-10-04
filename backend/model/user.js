@@ -70,6 +70,11 @@ const userSchema = new mongoose.Schema(
             default : "active"
         },
 
+        ward : {
+            type : String,
+            default : ""
+        },
+
         currentLocation : {
             latitude : {
                 type : Number,

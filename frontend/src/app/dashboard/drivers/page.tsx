@@ -6,7 +6,9 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Driver } from "@/store/greenCityStore";
 import { driverService } from "@/services/driver.service";
+import { vehicleService, Truck } from "@/services/vehicle.service";
 import { reportService } from "@/services/report.service";
+import TruckManager from "@/components/drivers/TruckManager";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Table, Column } from "@/components/ui/Table";
@@ -14,7 +16,6 @@ import { Modal } from "@/components/ui/Modal";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
-import { Skeleton } from "@/components/ui/Skeleton";
 
 interface DriverFormData {
   name: string;
@@ -22,20 +23,18 @@ interface DriverFormData {
   phone: string;
   vehicleNo: string;
   currentWard: string;
-  assignedRoute: string;
-  collectionDay: string;
   status: "Online" | "Offline";
 }
 
 export default function DriversPage() {
   const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [availableTrucks, setAvailableTrucks] = useState<Truck[]>([]);
+  const [truckRefresh, setTruckRefresh] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Modals state
   const [isOpen, setIsOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
-  // Edit / Context details
   const [editingDriver, setEditingDriver] = useState<Driver | null>(null);
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
 
@@ -52,17 +51,24 @@ export default function DriversPage() {
       phone: "",
       vehicleNo: "",
       currentWard: "Badulla Ward 03",
-      assignedRoute: "Route 03-A",
-      collectionDay: "Monday",
       status: "Online",
     },
   });
+
+  const loadTrucks = async (currentTruck?: string) => {
+    try {
+      setAvailableTrucks(await vehicleService.getAvailable(currentTruck));
+    } catch {
+      setAvailableTrucks([]);
+    }
+  };
 
   const loadDrivers = async () => {
     setIsLoading(true);
     try {
       const data = await driverService.getAll();
       setDrivers(data);
+      setTruckRefresh((n) => n + 1);
     } catch {
       toast.error("Failed to load drivers database.");
     } finally {
@@ -72,32 +78,31 @@ export default function DriversPage() {
 
   useEffect(() => {
     loadDrivers();
+    loadTrucks();
   }, []);
 
   const handleOpenAdd = () => {
     setEditingDriver(null);
+    loadTrucks();
     reset({
       name: "",
       nic: "",
       phone: "",
       vehicleNo: "",
       currentWard: "Badulla Ward 03",
-      assignedRoute: "Route 03-A",
-      collectionDay: "Monday",
       status: "Online",
     });
     setIsOpen(true);
   };
 
-  const handleOpenEdit = (driver: Driver) => {
+  const handleOpenEdit = async (driver: Driver) => {
     setEditingDriver(driver);
+    await loadTrucks(driver.vehicleNo);
     setValue("name", driver.name);
     setValue("nic", driver.nic || "");
     setValue("phone", driver.phone);
-    setValue("vehicleNo", driver.vehicleNo);
+    setValue("vehicleNo", driver.vehicleNo === "-" ? "" : driver.vehicleNo);
     setValue("currentWard", driver.currentWard);
-    setValue("assignedRoute", driver.assignedRoute || "");
-    setValue("collectionDay", driver.collectionDay || "Monday");
     setValue("status", driver.status);
     setIsOpen(true);
   };
@@ -114,8 +119,9 @@ export default function DriversPage() {
       setIsOpen(false);
       reset();
       loadDrivers();
-    } catch {
-      toast.error("Error processing driver details.");
+      loadTrucks();
+    } catch (err: any) {
+      toast.error(err.message || "Error processing driver details.");
     }
   };
 
@@ -124,8 +130,8 @@ export default function DriversPage() {
       await driverService.toggleStatus(driver.id);
       toast.success(`Driver status changed.`);
       loadDrivers();
-    } catch {
-      toast.error("Error toggling duty status.");
+    } catch (err: any) {
+      toast.error(err.message || "Error toggling duty status.");
     }
   };
 
@@ -134,11 +140,13 @@ export default function DriversPage() {
     try {
       await driverService.delete(selectedDriver.id);
       toast.success("Driver profile deleted.");
+      loadDrivers();
+      loadTrucks();
+    } catch (err: any) {
+      toast.error(err.message || "Error removing driver profile.");
+    } finally {
       setIsDeleteOpen(false);
       setSelectedDriver(null);
-      loadDrivers();
-    } catch {
-      toast.error("Error removing driver profile.");
     }
   };
 
@@ -148,8 +156,6 @@ export default function DriversPage() {
       "NIC",
       "Phone Number",
       "Truck Number",
-      "Assigned Route",
-      "Assigned Day",
       "Duty Status",
       "Active Ward",
     ];
@@ -158,8 +164,6 @@ export default function DriversPage() {
       d.nic,
       d.phone,
       d.vehicleNo,
-      d.assignedRoute || "Unassigned",
-      d.collectionDay || "Everyday",
       d.status,
       d.currentWard,
     ]);
@@ -173,6 +177,11 @@ export default function DriversPage() {
       sortable: true,
     },
     {
+      key: "vehicleNo",
+      header: "Truck Number",
+      sortable: true,
+    },
+    {
       key: "nic",
       header: "NIC",
       sortable: true,
@@ -183,23 +192,7 @@ export default function DriversPage() {
       header: "Phone Number",
       sortable: true,
     },
-    {
-      key: "vehicleNo",
-      header: "Truck Number",
-      sortable: true,
-    },
-    {
-      key: "assignedRoute",
-      header: "Assigned Route",
-      sortable: true,
-      render: (item) => <span>{item.assignedRoute || "Unassigned"}</span>,
-    },
-    {
-      key: "collectionDay",
-      header: "Collection Day",
-      sortable: true,
-      render: (item) => <span>{item.collectionDay || "Monday"}</span>,
-    },
+    
     {
       key: "status",
       header: "Duty Status",
@@ -217,7 +210,6 @@ export default function DriversPage() {
       header: "Actions",
       render: (item) => (
         <div className="flex items-center gap-2">
-          {/* Toggle status button */}
           <Button
             variant="ghost"
             size="sm"
@@ -234,7 +226,6 @@ export default function DriversPage() {
             )}
           </Button>
 
-          {/* Edit button */}
           <Button
             variant="ghost"
             size="sm"
@@ -245,7 +236,6 @@ export default function DriversPage() {
             <Edit3 className="h-3.5 w-3.5" />
           </Button>
 
-          {/* Delete button */}
           <Button
             variant="ghost"
             size="sm"
@@ -264,13 +254,12 @@ export default function DriversPage() {
   ];
 
   return (
-    <div className="flex flex-col gap-6 w-full">
-      {/* Header bar */}
+    <div className="flex flex-col gap-6 w-full pb-8">
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-xl font-extrabold text-foreground">Driver Management</h2>
           <p className="text-xs text-muted-text mt-0.5">
-            Register new drivers, configure active wards, and assign collection routes.
+            Register new drivers, assign trucks and manage the council fleet.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -285,7 +274,6 @@ export default function DriversPage() {
         </div>
       </div>
 
-      {/* Main Table wrapper */}
       <div className="bg-card-bg border border-card-border rounded-3xl p-5 shadow-sm">
         {isLoading ? (
           <div className="py-20 flex justify-center items-center gap-2 text-xs font-bold text-muted-text">
@@ -305,7 +293,8 @@ export default function DriversPage() {
         )}
       </div>
 
-      {/* Modal Dialog: Add/Edit Driver */}
+      <TruckManager onChange={() => loadTrucks()} refreshKey={truckRefresh} />
+
       <Modal
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
@@ -333,30 +322,17 @@ export default function DriversPage() {
               required: "Phone number is required.",
             })}
           />
-          <Input
-            label="Truck Number *"
-            placeholder="BMC-4530"
-            error={errors.vehicleNo?.message}
-            {...register("vehicleNo", { required: "Truck registration number is required." })}
-          />
-          <Input
-            label="Assigned Route *"
-            placeholder="Route 03-A"
-            error={errors.assignedRoute?.message}
-            {...register("assignedRoute", { required: "Assigned Route is required." })}
-          />
           <Select
-            label="Assigned Collection Day *"
+            label="Truck Number *"
             options={[
-              { value: "Monday", label: "Monday" },
-              { value: "Tuesday", label: "Tuesday" },
-              { value: "Wednesday", label: "Wednesday" },
-              { value: "Thursday", label: "Thursday" },
-              { value: "Friday", label: "Friday" },
-              { value: "Saturday", label: "Saturday" },
-              { value: "Sunday", label: "Sunday" },
+              { value: "", label: availableTrucks.length === 0 ? "No available trucks" : "Select an available truck" },
+              ...availableTrucks.map((t) => ({
+                value: t.vechicleNumber,
+                label: t.vechicleNumber + " (" + t.vechicleType + ")",
+              })),
             ]}
-            {...register("collectionDay")}
+            error={errors.vehicleNo?.message}
+            {...register("vehicleNo", { required: "Please select a truck." })}
           />
           <Select
             label="Designated Ward Limit *"
@@ -388,13 +364,12 @@ export default function DriversPage() {
         </form>
       </Modal>
 
-      {/* Confirm Dialog: Delete Driver */}
       <ConfirmDialog
         isOpen={isDeleteOpen}
         onClose={() => setIsDeleteOpen(false)}
         onConfirm={handleDeleteConfirm}
         title="Delete Driver Profile"
-        description={`Are you sure you want to permanently delete the profile of "${selectedDriver?.name}"? All assigned routes will be cleared.`}
+        description={`Are you sure you want to permanently delete the profile of "${selectedDriver?.name}"? A driver who is assigned to a route cannot be deleted. The driver's truck will become available again.`}
         confirmText="Permanently Delete"
       />
     </div>

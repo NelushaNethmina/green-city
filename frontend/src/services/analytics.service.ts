@@ -1,4 +1,6 @@
 import { useGreenCityStore } from "@/store/greenCityStore";
+import { collectionService } from "@/services/collection.service";
+import { routeService } from "@/services/route.service";
 
 export interface AnalyticsSummary {
   mostActiveArea: string;
@@ -16,7 +18,7 @@ const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "S
 export const analyticsService = {
   getSummary: async (timeframe: "daily" | "weekly" | "monthly" | "yearly" = "monthly"): Promise<AnalyticsSummary> => {
     const store = useGreenCityStore.getState();
-    const collections = store.dailyCollections;
+    const collections = await collectionService.getDailyCollections();
 
     // ── Category Distribution (from real daily collection records) ─────────
     const catTotals: Record<string, number> = {};
@@ -66,10 +68,14 @@ export const analyticsService = {
     const factor = timeframe === "daily" ? 0.3 : timeframe === "weekly" ? 0.7 : timeframe === "yearly" ? 12 : 1;
 
     // ── Collection Efficiency (from bin statuses, preserved) ──────────────
-    const collectedCount = store.bins.filter((b) => b.status === "Collected").length;
-    const totalCount = store.bins.length;
+    let routes: any[] = [];
+    try {
+      routes = await routeService.getAll();
+    } catch {}
+    const completedCount = routes.filter((r) => r.status === "Completed").length;
     const collectionEfficiencyPercent =
-      totalCount > 0 ? Math.round((collectedCount / totalCount) * 100) : 92;
+      routes.length > 0 ? Math.round((completedCount / routes.length) * 100) : 0;
+      
 
     // ── Most Active Area (from bins, preserved) ────────────────────────────
     const wardCounts: Record<string, number> = {};

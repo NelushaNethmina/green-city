@@ -51,6 +51,7 @@ export async function addSchedule(req, res) {
             res.status(400).json({
                 message: "This vehicle is not assigned to the selected driver."
             })
+            return
         }
 
         const schedule = new Schedule({
@@ -144,6 +145,7 @@ export async function updateSchedule(req, res) {
             res.status(404).json({
                 message: "Schedule not found"
             })
+            return
         }
 
         const driver = await User.findOne({ email: req.body.driver })
