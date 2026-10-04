@@ -81,7 +81,7 @@ export default function CollectionsPage() {
     }
   };
 
-    const loadCollections = async () => {
+  const loadCollections = async () => {
     try {
       const data = await collectionService.getDailyCollections();
       setDailyCollections(data);
@@ -90,7 +90,7 @@ export default function CollectionsPage() {
     }
   };
 
-    useEffect(() => {
+  useEffect(() => {
     const init = async () => {
       setIsLoading(true);
       await loadCategories();
@@ -450,12 +450,12 @@ export default function CollectionsPage() {
           cat === "Food Waste"
             ? "success"
             : cat === "Plastic"
-            ? "info"
-            : cat === "Polythene"
-            ? "default"
-            : cat === "Paper"
-            ? "warning"
-            : "error";
+              ? "info"
+              : cat === "Polythene"
+                ? "default"
+                : cat === "Paper"
+                  ? "warning"
+                  : "error";
         return <Badge variant={variant}>{cat}</Badge>;
       },
     },
@@ -679,8 +679,15 @@ export default function CollectionsPage() {
                 onChange={(e) => setNewCategoryName(e.target.value)}
               />
             </div>
-            <Button onClick={handleAddCategory} variant="primary" size="sm" className="sm:w-32 h-[42px] cursor-pointer">
-              <Plus className="h-4 w-4 mr-1" /> Add Category
+
+            <Button
+              onClick={handleAddCategory}
+              variant="primary"
+              size="sm"
+              className="sm:w-40 h-[42px] cursor-pointer whitespace-nowrap"
+            >
+              <Plus className="h-4 w-4 mr-1.5 shrink-0" />
+              Add Category
             </Button>
           </div>
 
@@ -848,7 +855,7 @@ export default function CollectionsPage() {
         onClose={() => setIsDeleteOpen(false)}
         onConfirm={handleDeleteConfirm}
         title="Delete Collection Record"
-        description="Are you sure you want to permanently delete this daily waste collection log? This action will impact historical analytics and cannot be undone."
+        description="Are you sure you want to permanently delete this daily waste collection log?"
         confirmText="Confirm Delete"
       />
     </div>

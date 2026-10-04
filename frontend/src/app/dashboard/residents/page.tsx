@@ -552,7 +552,7 @@ export default function ResidentsPage() {
         onClose={() => setIsDeleteOpen(false)}
         onConfirm={handleDeleteConfirm}
         title="Delete Resident Profile"
-        description={`Are you sure you want to permanently delete the profile of "${selectedResident?.name}"? All past collection logs associated will be archived.`}
+        description={`Are you sure you want to permanently delete the profile of "${selectedResident?.name}"?`}
         confirmText="Permanently Delete"
       />
     </div>

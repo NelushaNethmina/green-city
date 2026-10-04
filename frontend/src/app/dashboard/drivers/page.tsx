@@ -396,7 +396,7 @@ export default function DriversPage() {
         onClose={() => setIsDeleteOpen(false)}
         onConfirm={handleDeleteConfirm}
         title="Delete Driver Profile"
-        description={`Are you sure you want to permanently delete the profile of "${selectedDriver?.name}"? A driver who is assigned to a route cannot be deleted. The driver's truck will become available again.`}
+        description={`Are you sure you want to permanently delete the profile of "${selectedDriver?.name}"? `}
         confirmText="Permanently Delete"
       />
     </div>

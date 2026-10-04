@@ -231,9 +231,9 @@ function SettingsContent() {
       <Card
         id="profile-settings"
         className={cn(
-          "lg:col-span-7 h-fit transition-all duration-500 border border-card-border",
-          highlightProfile && "ring-4 ring-primary-green/30 border-primary-green/50 shadow-lg shadow-primary-green/10 scale-[1.01]"
-        )}
+  "lg:col-span-12 h-fit transition-all duration-500 border border-card-border",
+  highlightProfile && "ring-4 ring-primary-green/30 border-primary-green/50 shadow-lg shadow-primary-green/10 scale-[1.01]"
+)}
       >
         <CardHeader>
           <CardTitle className="text-sm font-extrabold uppercase tracking-wider flex items-center gap-2">
@@ -330,75 +330,7 @@ function SettingsContent() {
         </CardContent>
       </Card>
 
-      {/* 2. System Operations Configuration (5 cols) */}
-      <Card className="lg:col-span-5 h-fit border border-card-border">
-        <CardHeader>
-          <CardTitle className="text-sm font-extrabold uppercase tracking-wider flex items-center gap-2">
-            <Settings className="h-4.5 w-4.5 text-blue-500" />
-            System Configurations
-          </CardTitle>
-          <CardDescription className="text-[11px] font-bold">Operational timers & limits for pilots</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={systemForm.handleSubmit(onUpdateSystem)} className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
-              <Input
-                label="Duty Start Time *"
-                type="text"
-                placeholder="06:00"
-                {...systemForm.register("workingHoursStart", { required: true })}
-              />
-              <Input
-                label="Duty End Time *"
-                type="text"
-                placeholder="18:00"
-                {...systemForm.register("workingHoursEnd", { required: true })}
-              />
-            </div>
-            
-            <Input
-              label="Notification Radius (Meters) *"
-              type="number"
-              placeholder="500"
-              {...systemForm.register("notificationRadiusMeters", { required: true })}
-            />
-
-            {/* Checkbox toggles */}
-            <div className="space-y-3.5 pt-1">
-              <div className="flex items-start gap-2.5">
-                <input
-                  type="checkbox"
-                  id="smsAlerts"
-                  className="mt-0.5 h-4.5 w-4.5 rounded border-card-border text-primary-green focus:ring-primary-green focus:ring-opacity-20 cursor-pointer"
-                  {...systemForm.register("smsAlerts")}
-                />
-                <label htmlFor="smsAlerts" className="text-xs font-bold text-foreground uppercase cursor-pointer leading-tight">
-                  Enable Citizen SMS dispatch alerts
-                </label>
-              </div>
-
-              <div className="flex items-start gap-2.5">
-                <input
-                  type="checkbox"
-                  id="autoRouteDispatch"
-                  className="mt-0.5 h-4.5 w-4.5 rounded border-card-border text-primary-green focus:ring-primary-green focus:ring-opacity-20 cursor-pointer"
-                  {...systemForm.register("autoRouteDispatch")}
-                />
-                <label htmlFor="autoRouteDispatch" className="text-xs font-bold text-foreground uppercase cursor-pointer leading-tight">
-                  Auto-assign routes to active trucks
-                </label>
-              </div>
-            </div>
-
-            <div className="flex justify-end pt-2">
-              <Button variant="primary" size="sm" type="submit" className="cursor-pointer">
-                <Save className="h-4 w-4 mr-1.5" />
-                Save Configurations
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+      
 
       {/* 3. Administrators CRUD (12 cols - Bottom Row) */}
       <Card className="lg:col-span-12 border border-card-border">

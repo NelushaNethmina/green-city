@@ -125,7 +125,7 @@ export async function deleteVechicle(req,res){
 
             if(driver != null){
                 res.status(400).json({
-                    message : "Cannot delete truck " + vechicleNumber + ". It is assigned to driver " + driver.firstName + " " + driver.lastName + ". Assign that driver a different truck first."
+                    message : "Cannot delete truck " + vechicleNumber + ". "
                 })
                 return
             }

@@ -313,7 +313,7 @@ export async function deleteUser(req,res){
 
             if(scheduleCount > 0){
                 res.status(400).json({
-                    message : "Cannot delete driver " + user.firstName + " " + user.lastName + ". This driver is assigned to " + scheduleCount + " route(s). Delete the route assignment first."
+                    message : "Cannot delete driver " + user.firstName + " " + user.lastName + ". "
                 })
                 return
             }

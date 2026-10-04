@@ -262,7 +262,7 @@ export default function TruckManager({ onChange, refreshKey }: { onChange?: () =
         onClose={() => setIsDeleteOpen(false)}
         onConfirm={handleDeleteConfirm}
         title="Delete Truck"
-        description="Are you sure you want to delete this truck? Trucks assigned to a driver or used in routes cannot be deleted."
+        description="Are you sure you want to delete this truck?"
         confirmText="Delete Truck"
       />
     </div>
