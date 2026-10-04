@@ -7,6 +7,10 @@ function config() {
   return { headers: { Authorization: "Bearer " + localStorage.getItem("token") } };
 }
 
+function errorMessage(err: any, fallback: string) {
+  return err?.response?.data?.message || err?.response?.data?.error || err?.message || fallback;
+}
+
 export const driverService = {
   getAll: async (): Promise<Driver[]> => {
     const users = await axios.get(url + "/users", config());

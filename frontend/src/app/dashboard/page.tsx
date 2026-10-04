@@ -104,26 +104,35 @@ export default function OverviewPage() {
   const [routes, setRoutes] = useState<RouteAssignment[]>([]);
   const [requests, setRequests] = useState<WasteRequest[]>([]);
 
-  const loadAll = async () => {
-    try {
-      
-      const [d, r, c, rt, rq] = await Promise.all([
-        driverService.getAll(),
-        residentService.getAll(),
-        collectionService.getDailyCollections(),
-        routeService.getAll(),
-        requestService.getAll(),
-      ]);
-      setDrivers(d);
-      setResidents(r);
-      setDailyCollections(c);
-      setRoutes(rt);
-      setRequests(rq);
-    } catch {
-      toast.error("Failed to load dashboard data.");
+    const loadAll = async () => {
+    const results = await Promise.allSettled([
+      driverService.getAll(),
+      residentService.getAll(),
+      collectionService.getDailyCollections(),
+      routeService.getAll(),
+      requestService.getAll(),
+    ]);
+
+    const names = ["drivers", "residents", "daily collections", "routes", "requests"];
+    const failed: string[] = [];
+
+    results.forEach((r, i) => {
+      if (r.status === "rejected") {
+        failed.push(names[i]);
+        console.error("Dashboard load failed: " + names[i], r.reason);
+      }
+    });
+
+    if (results[0].status === "fulfilled") setDrivers(results[0].value);
+    if (results[1].status === "fulfilled") setResidents(results[1].value);
+    if (results[2].status === "fulfilled") setDailyCollections(results[2].value);
+    if (results[3].status === "fulfilled") setRoutes(results[3].value);
+    if (results[4].status === "fulfilled") setRequests(results[4].value);
+
+    if (failed.length > 0) {
+      toast.error("Failed to load: " + failed.join(", "));
     }
   };
-
     const mapBins = useMemo<BinLocation[]>(() => {
     return requests
       .filter((r) => typeof r.latitude === "number" && typeof r.longitude === "number")
