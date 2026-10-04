@@ -177,9 +177,6 @@ export default function TruckManager({ onChange, refreshKey }: { onChange?: () =
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-xl font-extrabold text-foreground">Truck Management</h2>
-          <p className="text-xs text-muted-text mt-0.5">
-            Register trucks, update their details and see which driver is using each truck.
-          </p>
         </div>
         <Button onClick={handleOpenAdd} variant="primary" size="sm" className="text-xs shrink-0 cursor-pointer">
           <Plus className="h-4 w-4 mr-1.5" />

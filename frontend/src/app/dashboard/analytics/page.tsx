@@ -63,9 +63,6 @@ export default function AnalyticsPage() {
       <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
         <div>
           <h2 className="text-xl font-extrabold text-foreground">Analytics Engine</h2>
-          <p className="text-xs text-muted-text mt-0.5">
-            Optimize resource allocations using historical weight logs and coverage metrics.
-          </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           {summary && (
@@ -136,7 +133,7 @@ export default function AnalyticsPage() {
             <Card className="lg:col-span-8">
               <CardHeader>
                 <CardTitle className="text-sm font-extrabold uppercase tracking-wider">Weight Trends</CardTitle>
-                <CardDescription className="text-[10px] font-bold">Waste quantities collected vs target projections</CardDescription>
+                
               </CardHeader>
               <CardContent>
                 <div className="h-[260px] w-full">
@@ -172,7 +169,7 @@ export default function AnalyticsPage() {
             <Card className="lg:col-span-4">
               <CardHeader>
                 <CardTitle className="text-sm font-extrabold uppercase tracking-wider">Category Share</CardTitle>
-                <CardDescription className="text-[10px] font-bold">Division by waste classification</CardDescription>
+                
               </CardHeader>
               <CardContent className="flex flex-col items-center">
                 <div className="h-[180px] w-full">
@@ -201,11 +198,11 @@ export default function AnalyticsPage() {
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
-                <div className="flex flex-col gap-2 w-full mt-2 text-[9px] font-bold text-foreground">
+                <div className="flex flex-col gap-2 w-full mt-2 text-[12px] font-bold text-foreground">
                   {summary.categoryDistribution.map((entry, idx) => (
                     <div key={entry.name} className="flex justify-between items-center">
                       <div className="flex items-center gap-1.5">
-                        <span style={{ backgroundColor: COLORS[idx] }} className="w-1.5 h-1.5 rounded-full inline-block" />
+                        <span style={{ backgroundColor: COLORS[idx] }} className="w-3.5 h-3.5 rounded-full inline-block" />
                         <span>{entry.name}</span>
                       </div>
                       <span className="text-muted-text">{entry.value} Kg</span>

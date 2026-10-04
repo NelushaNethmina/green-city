@@ -82,7 +82,7 @@ function SettingsContent() {
           profileForm.reset({
             name: user.name || "Council Admin",
             email: user.email || "admin@greencity.lk",
-            profilePic: user.profilePic || "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=100&q=80",
+            profilePic: user.profilePic || "https://images..com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=100&q=80",
             password: "",
             confirmPassword: ""
           });
@@ -222,9 +222,6 @@ function SettingsContent() {
       {/* Title */}
       <div className="lg:col-span-12">
         <h2 className="text-2xl font-extrabold text-foreground">Settings Panel</h2>
-        <p className="text-[13px] text-muted-text mt-0.5">
-          Configure collection intervals, manage user logins, and update admin profile details.
-        </p>
       </div>
 
       {/* 1. Profile Config Card (7 cols) */}
@@ -240,7 +237,7 @@ function SettingsContent() {
             <User className="h-4.5 w-4.5 text-primary-green" />
             Admin Profile Settings
           </CardTitle>
-          <CardDescription className="text-[11px] font-bold font-sans">Manage your login credential states</CardDescription>
+          
         </CardHeader>
         <CardContent>
           <form onSubmit={profileForm.handleSubmit(onUpdateProfile)} className="space-y-6">
@@ -249,10 +246,10 @@ function SettingsContent() {
             <div className="flex flex-col items-center gap-3 mb-6">
               <div 
                 onClick={() => fileInputRef.current?.click()}
-                className="relative h-24 w-24 rounded-full group cursor-pointer border-2 border-primary-green/20 hover:border-primary-green overflow-hidden transition-all duration-300 shadow-inner bg-muted-bg"
+                className="relative h-34 w-34 rounded-full group cursor-pointer border-2 border-primary-green/20 hover:border-primary-green overflow-hidden transition-all duration-300 shadow-inner bg-muted-bg"
               >
                 <img
-                  src={profileForm.watch("profilePic") || "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=100&q=80"}
+                  src={profileForm.watch("profilePic") || "https://res.cloudinary.com/dfgkfyldd/image/upload/v1784293764/ChatGPT_Image_Jun_21_2026_12_32_07_AM_o0o1d3.png"}
                   className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
                   alt="Profile Avatar"
                 />
@@ -339,7 +336,7 @@ function SettingsContent() {
             <Users className="h-4.5 w-4.5 text-amber-500" />
             Administrators Database
           </CardTitle>
-          <CardDescription className="text-[11px] font-bold">Manage credentials for municipal staff</CardDescription>
+          
         </CardHeader>
         <CardContent className="space-y-8">
           

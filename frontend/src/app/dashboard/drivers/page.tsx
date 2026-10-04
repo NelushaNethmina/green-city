@@ -264,9 +264,6 @@ export default function DriversPage() {
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-xl font-extrabold text-foreground">Driver Management</h2>
-          <p className="text-xs text-muted-text mt-0.5">
-            Register new drivers, assign trucks and manage the council fleet.
-          </p>
         </div>
         <div className="flex items-center gap-2">
           <Button onClick={handleExportCSV} variant="outline" size="sm" className="text-xs shrink-0 cursor-pointer">

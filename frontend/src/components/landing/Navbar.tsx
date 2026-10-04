@@ -133,11 +133,7 @@ export function Navbar() {
         {/* Right Corner CTA */}
         <div className="flex items-center gap-3">
           <Link href="/login">
-            <Button
-              className="text-xs px-5 py-2 font-extrabold !bg-[#0F5C3B] hover:!bg-[#0A452C] text-white shadow-md shadow-primary-green/15 hover:shadow-lg hover:shadow-primary-green/25 hover:-translate-y-0.5 transition-all duration-300"
-            >
-              Admin Login
-            </Button>
+            
           </Link>
           
           {/* Mobile Menu Toggle Button */}

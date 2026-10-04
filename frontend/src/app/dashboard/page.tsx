@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import {
@@ -66,7 +67,7 @@ const LiveTrackingMap = dynamic(
 
 // Form Interfaces for Quick Actions
 interface QuickDriverForm {
-  email: string; 
+  email: string;
   password: string;
   name: string;
   nic: string;
@@ -97,6 +98,7 @@ interface QuickNotificationForm {
 }
 
 export default function OverviewPage() {
+  const router = useRouter();
   const store = useGreenCityStore();
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [residents, setResidents] = useState<ResidentUser[]>([]);
@@ -104,7 +106,7 @@ export default function OverviewPage() {
   const [routes, setRoutes] = useState<RouteAssignment[]>([]);
   const [requests, setRequests] = useState<WasteRequest[]>([]);
 
-    const loadAll = async () => {
+  const loadAll = async () => {
     const results = await Promise.allSettled([
       driverService.getAll(),
       residentService.getAll(),
@@ -133,7 +135,7 @@ export default function OverviewPage() {
       toast.error("Failed to load: " + failed.join(", "));
     }
   };
-    const mapBins = useMemo<BinLocation[]>(() => {
+  const mapBins = useMemo<BinLocation[]>(() => {
     return requests
       .filter((r) => typeof r.latitude === "number" && typeof r.longitude === "number")
       .map((r) => ({
@@ -171,7 +173,7 @@ export default function OverviewPage() {
     const completed = requests.filter((r) => r.status === "Collected").length;
     const residentCount = residents.length;
     const driverCount = drivers.length;
-    
+
 
     return {
       todayWeight: todayWeight.toFixed(1),
@@ -189,10 +191,10 @@ export default function OverviewPage() {
   }, [routes]);
 
   // Quick Action Submissions
-   const onAddDriver = async (data: QuickDriverForm) => {
+  const onAddDriver = async (data: QuickDriverForm) => {
     try {
       await driverService.create({
-        email: data.email, 
+        email: data.email,
         password: data.password,
         name: data.name,
         nic: data.nic,
@@ -312,9 +314,6 @@ export default function OverviewPage() {
             <h2 className="text-[19px] font-black text-foreground uppercase tracking-tight">
               Live Fleet Dispatch Map
             </h2>
-            <p className="text-[12.5px] text-muted-text">
-              Real-time locations of active garbage trucks and pending municipal waste tags in Badulla.
-            </p>
           </div>
           <div className="flex items-center gap-1 text-[11px] font-bold text-primary-green uppercase bg-primary-green/5 border border-primary-green/10 px-3 py-1 rounded-full">
             <Sparkles className="h-3 w-3 animate-pulse" />
@@ -330,74 +329,59 @@ export default function OverviewPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {/* Card 1 */}
         <Card>
-          <CardContent className="pt-5 flex flex-col gap-1">
+          <CardContent className="pt-5 flex flex-col gap-1 justify-center min-h-[115px]">
             <span className="text-[12px] font-bold text-muted-text uppercase tracking-wider block">Today's Collections</span>
             <span className="text-xl font-black text-foreground mt-1 block">
               {metrics.todayWeight} <span className="text-xs text-muted-text font-semibold">Kg</span>
             </span>
-            <span className="text-[11px] text-emerald-600 font-bold flex items-center gap-1 mt-2">
-              <TrendingUp className="h-3 w-3" />
-              Weight aggregated
-            </span>
+  
           </CardContent>
         </Card>
 
         {/* Card 2 */}
         <Card>
-          <CardContent className="pt-5 flex flex-col gap-1">
+          <CardContent className="pt-5 flex flex-col gap-1 justify-center min-h-[115px]">
             <span className="text-[12px] font-bold text-muted-text uppercase tracking-wider block">Pending Collections</span>
             <span className="text-xl font-black text-foreground mt-1 block">
               {metrics.pending} <span className="text-xs text-muted-text font-semibold">Requests</span>
             </span>
-            <span className="text-[11px] text-amber-500 font-bold flex items-center gap-1 mt-2">
-              <Clock className="h-3 w-3 animate-pulse" />
-              Awaiting dispatch
-            </span>
+            
           </CardContent>
         </Card>
 
         {/* Card 3 */}
         <Card>
-          <CardContent className="pt-5 flex flex-col gap-1">
+          <CardContent className="pt-5 flex flex-col gap-1 justify-center min-h-[115px]">
             <span className="text-[12px] font-bold text-muted-text uppercase tracking-wider block">Completed Collections</span>
             <span className="text-xl font-black text-foreground mt-1 block">
               {metrics.completed} <span className="text-xs text-muted-text font-semibold">Runs</span>
             </span>
-            <span className="text-[11px] text-primary-green font-bold flex items-center gap-1 mt-2">
-              <ShieldCheck className="h-3 w-3" />
-              Successfully collected
-            </span>
+            
           </CardContent>
         </Card>
 
         {/* Card 4 */}
         <Card>
-          <CardContent className="pt-5 flex flex-col gap-1">
+          <CardContent className="pt-5 flex flex-col gap-1 justify-center min-h-[115px]">
             <span className="text-[12px] font-bold text-muted-text uppercase tracking-wider block">Registered Residents</span>
             <span className="text-xl font-black text-foreground mt-1 block">{metrics.residentCount}</span>
-            <span className="text-[11px] text-primary-green font-bold flex items-center gap-1 mt-2">
-              <Users className="h-3 w-3" />
-              Active app users
-            </span>
+            
           </CardContent>
         </Card>
 
         {/* Card 5 */}
         <Card>
-          <CardContent className="pt-5 flex flex-col gap-1">
+          <CardContent className="pt-5 flex flex-col gap-1 justify-center min-h-[115px]">
             <span className="text-[12px] font-bold text-muted-text uppercase tracking-wider block">Registered Drivers</span>
             <span className="text-xl font-black text-foreground mt-1 block">{metrics.driverCount}</span>
-            <span className="text-[11px] text-primary-green font-bold flex items-center gap-1 mt-2">
-              <Truck className="h-3 w-3" />
-              Council fleet size
-            </span>
+            
           </CardContent>
         </Card>
       </div>
 
       {/* 3. Quick Actions & Today's Schedule Row */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
+
         {/* Quick Actions Panel */}
         <Card className="lg:col-span-6">
           <CardHeader className="pb-3">
@@ -405,7 +389,6 @@ export default function OverviewPage() {
               <PlusCircle className="h-4.5 w-4.5 text-primary-green" />
               Quick Administrative Actions
             </CardTitle>
-            <CardDescription className="text-[12px] font-bold">Deploy fleet or notify citizens instantly</CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-2 gap-3">
             <Button
@@ -420,11 +403,11 @@ export default function OverviewPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setModalType("waste")}
+              onClick={() => router.push("/dashboard/drivers")}
               className="h-14 flex flex-col items-center justify-center gap-1 rounded-2xl border-card-border bg-muted-bg hover:bg-muted-bg/50 hover:border-primary-green/30 cursor-pointer"
             >
-              <FilePlus className="h-4.5 w-4.5 text-blue-500" />
-              <span className="text-[12px] font-bold">Add Waste Record</span>
+              <Truck className="h-4.5 w-4.5 text-blue-500" />
+              <span className="text-[12px] font-bold">Add Truck</span>
             </Button>
             <Button
               variant="outline"
@@ -438,11 +421,11 @@ export default function OverviewPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setModalType("notification")}
+              onClick={() => setModalType("waste")}
               className="h-14 flex flex-col items-center justify-center gap-1 rounded-2xl border-card-border bg-muted-bg hover:bg-muted-bg/50 hover:border-primary-green/30 cursor-pointer"
             >
-              <Send className="h-4.5 w-4.5 text-purple-500" />
-              <span className="text-[12px] font-bold">Send Notification</span>
+              <FilePlus className="h-4.5 w-4.5 text-purple-500" />
+              <span className="text-[12px] font-bold">Add Waste Report</span>
             </Button>
           </CardContent>
         </Card>
@@ -454,13 +437,15 @@ export default function OverviewPage() {
               <Calendar className="h-4.5 w-4.5 text-amber-500" />
               Today's Schedule Panel
             </CardTitle>
-            <CardDescription className="text-[12px] font-bold">Assigned drivers & garbage classes active today</CardDescription>
           </CardHeader>
+
           <CardContent className="flex-1 flex flex-col gap-2 overflow-y-auto max-h-[160px] no-scrollbar">
             {todaysSchedule.length === 0 ? (
               <div className="flex-1 flex flex-col items-center justify-center text-center p-4">
                 <AlertCircle className="h-7 w-7 text-muted-text/45 mb-1" />
-                <p className="text-[12px] text-muted-text font-bold">No active collections dispatched for today yet.</p>
+                <p className="text-[12px] text-muted-text font-bold">
+                  No active collections dispatched for today yet.
+                </p>
               </div>
             ) : (
               todaysSchedule.map((sch) => {
@@ -481,9 +466,8 @@ export default function OverviewPage() {
                         <p className="text-foreground">{sch.estimatedDistanceKm} Km</p>
                         <p className="text-[10.5px] text-muted-text font-semibold uppercase">Est. Dist</p>
                       </div>
-                      <span className={`px-2 py-0.5 rounded-full text-[10.5px] ${
-                        sch.status === "Active" ? "bg-blue-500/10 text-blue-500 border border-blue-500/20" : "bg-green-500/10 text-green-500 border border-green-500/20"
-                      }`}>
+                      <span className={`px-2 py-0.5 rounded-full text-[10.5px] ${sch.status === "Active" ? "bg-blue-500/10 text-blue-500 border border-blue-500/20" : "bg-green-500/10 text-green-500 border border-green-500/20"
+                        }`}>
                         {sch.status}
                       </span>
                     </div>
@@ -501,8 +485,9 @@ export default function OverviewPage() {
         {/* Collection Trend Charts */}
         <Card className="lg:col-span-7 flex flex-col justify-between">
           <CardHeader className="p-8 pb-4">
-            <CardTitle className="text-[15.5px] font-extrabold uppercase tracking-wider">Weekly Collection Volume</CardTitle>
-            <CardDescription className="text-[12px] font-bold">Daily waste quantities tracked in pilots (Kg)</CardDescription>
+            <CardTitle className="text-[15.5px] font-extrabold uppercase tracking-wider">
+              Weekly Collection Volume
+            </CardTitle>
           </CardHeader>
           <CardContent className="p-8 pt-0 flex-1 flex flex-col justify-end">
             <div className="h-[290px] w-full">
@@ -535,8 +520,9 @@ export default function OverviewPage() {
         {/* Waste Shares Pie Chart */}
         <Card className="lg:col-span-5 flex flex-col justify-between">
           <CardHeader className="p-8 pb-4">
-            <CardTitle className="text-[15.5px] font-extrabold uppercase tracking-wider">Category Shares</CardTitle>
-            <CardDescription className="text-[12px] font-bold">Pilot waste proportions</CardDescription>
+            <CardTitle className="text-[15.5px] font-extrabold uppercase tracking-wider">
+              Category Shares
+            </CardTitle>
           </CardHeader>
           <CardContent className="p-8 pt-0 flex flex-col items-center justify-between flex-1">
             <div className="h-[250px] w-full flex items-center justify-center">

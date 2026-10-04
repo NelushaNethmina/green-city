@@ -520,9 +520,6 @@ export default function CollectionsPage() {
       <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
         <div>
           <h2 className="text-xl font-extrabold text-foreground">Daily Waste Collection Register</h2>
-          <p className="text-xs text-muted-text mt-0.5">
-            Record and inspect daily municipal waste volumes. Data feeds analytics and forecasting dashboards.
-          </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <ReportExport
@@ -665,9 +662,7 @@ export default function CollectionsPage() {
             <Tag className="h-4.5 w-4.5 text-primary-green" />
             Waste Category Manager
           </CardTitle>
-          <CardDescription className="text-[11px] font-bold">
-            Create, rename or delete custom waste categories. Built-in categories are protected.
-          </CardDescription>
+          
         </CardHeader>
         <CardContent className="pt-6 space-y-5">
           {/* Add Category Section */}

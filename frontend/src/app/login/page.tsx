@@ -36,7 +36,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await loginStore.login(data.email, data.password);
-      toast.success("Login successful! Redirecting to dashboard...");
+      toast.success("Login successful!");
       // Let's redirect using router
       setTimeout(() => {
         router.push("/dashboard");
@@ -49,28 +49,23 @@ export default function LoginPage() {
 
   return (
     <div className="relative min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-green-500/10 via-background to-background overflow-hidden">
-      
+
       {/* Decorative Blur Blobs */}
       <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary-green/5 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-accent-green/5 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Floating back button */}
-      <div className="absolute top-6 left-6">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-xs font-bold text-muted-text hover:text-foreground transition duration-200"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Landing
-        </Link>
-      </div>
+
 
       <div className="w-full max-w-md z-10">
-        
+
         {/* Logo and title */}
         <div className="flex flex-col items-center mb-8 text-center gap-2">
-          <div className="p-3 bg-primary-green text-white rounded-full shadow-lg">
-            <Leaf className="h-6 w-6 fill-current" />
+          <div className="p-1 bg-primary-green rounded-full shadow-lg flex items-center justify-center">
+            <img
+              src="/logo_new.png"
+              alt="Green City Logo"
+              className="h-18 w-18 object-contain"
+            />
           </div>
           <h1 className="text-2xl font-black tracking-tight text-foreground uppercase mt-2">
             Green <span className="text-primary-green">City</span>
@@ -84,7 +79,7 @@ export default function LoginPage() {
         <Card className="border border-card-border bg-card-bg/40 backdrop-blur-md">
           <CardContent className="pt-6">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4.5">
-              
+
               {/* Email Input */}
               <div className="relative">
                 <Input
@@ -119,15 +114,7 @@ export default function LoginPage() {
                 />
               </div>
 
-              {/* Info Tips / Test Credentials */}
-              <div className="p-3.5 rounded-2xl bg-primary-green/5 border border-primary-green/10 flex items-start gap-2.5 text-[11px] text-muted-text">
-                <Info className="h-4.5 w-4.5 text-primary-green shrink-0 mt-0.5" />
-                <div className="leading-relaxed font-semibold">
-                  <p className="text-foreground font-bold mb-0.5">Demo Credentials:</p>
-                  <p>Email: <code className="text-primary-green">admin@greencity.lk</code></p>
-                  <p>Password: <code className="text-primary-green">admin123</code></p>
-                </div>
-              </div>
+
 
               {/* Submit Button */}
               <div className="pt-2">

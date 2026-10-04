@@ -258,9 +258,6 @@ export default function RouteManagementPage() {
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-xl font-extrabold text-foreground">Route Management</h2>
-          <p className="text-xs text-muted-text mt-0.5">
-            Optimize collection coverage, assign active trucks, and monitor route distances.
-          </p>
         </div>
         <Button onClick={handleOpenAdd} variant="primary" size="sm" className="text-xs shrink-0 cursor-pointer">
           <Plus className="h-4 w-4 mr-1.5" />

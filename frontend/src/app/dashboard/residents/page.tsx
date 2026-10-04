@@ -311,9 +311,6 @@ export default function ResidentsPage() {
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-xl font-extrabold text-foreground">Resident Directory</h2>
-          <p className="text-xs text-muted-text mt-0.5">
-            Audit registered municipal app users, update house locations, or lock suspended profiles.
-          </p>
         </div>
         <div className="flex items-center gap-2">
           <Button onClick={handleExportCSV} variant="outline" size="sm" className="text-xs shrink-0 cursor-pointer">

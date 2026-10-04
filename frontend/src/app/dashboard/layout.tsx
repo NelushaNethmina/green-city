@@ -147,7 +147,7 @@ export default function DashboardLayout({
             title="View Profile Settings"
           >
             <img
-              src={auth.user?.profilePic || "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=100&q=80"}
+              src={auth.user?.profilePic || "https://res.cloudinary.com/dfgkfyldd/image/upload/v1784293764/ChatGPT_Image_Jun_21_2026_12_32_07_AM_o0o1d3.png"}
               className="h-11 w-11 rounded-full object-cover shrink-0 border border-primary-green/20"
               alt="Admin Avatar"
             />
@@ -230,7 +230,7 @@ export default function DashboardLayout({
                 className="flex items-center gap-3 cursor-pointer hover:bg-muted-bg/50 p-1.5 rounded-2xl transition-all duration-300"
               >
                 <img
-                  src={auth.user?.profilePic || "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=100&q=80"}
+                  src={auth.user?.profilePic || "https://images..com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=100&q=80"}
                   className="h-11 w-11 rounded-full object-cover shrink-0 border border-primary-green/20"
                   alt="Admin Avatar"
                 />
@@ -302,7 +302,7 @@ export default function DashboardLayout({
             {/* Quick Profile */}
             <img
               onClick={() => router.push("/dashboard/settings?focus=profile")}
-              src={auth.user?.profilePic || "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=100&q=80"}
+              src={auth.user?.profilePic || "https://images..com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=100&q=80"}
               className="h-9 w-9 rounded-full object-cover border border-primary-green/20 sm:hidden cursor-pointer"
               alt="Admin Avatar"
             />
