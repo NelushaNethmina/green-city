@@ -102,7 +102,7 @@ export default function AnalyticsPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card>
               <CardContent className="pt-5">
-                <span className="text-[10px] font-bold text-muted-text uppercase tracking-wider block">Most Active Ward</span>
+                <span className="text-[10px] font-bold text-muted-text uppercase tracking-wider block">Most Active Route</span>
                 <span className="text-lg font-black text-foreground mt-1 block">{summary.mostActiveArea}</span>
               </CardContent>
             </Card>
@@ -127,13 +127,13 @@ export default function AnalyticsPage() {
           </div>
 
           {/* Charts grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
+
             {/* Area Chart: Monthly Collections */}
             <Card className="lg:col-span-8">
               <CardHeader>
                 <CardTitle className="text-sm font-extrabold uppercase tracking-wider">Weight Trends</CardTitle>
-                
+
               </CardHeader>
               <CardContent>
                 <div className="h-[260px] w-full">
@@ -169,7 +169,7 @@ export default function AnalyticsPage() {
             <Card className="lg:col-span-4">
               <CardHeader>
                 <CardTitle className="text-sm font-extrabold uppercase tracking-wider">Category Share</CardTitle>
-                
+
               </CardHeader>
               <CardContent className="flex flex-col items-center">
                 <div className="h-[180px] w-full">
@@ -212,35 +212,8 @@ export default function AnalyticsPage() {
               </CardContent>
             </Card>
 
-            {/* Bar Chart: Ward Performance */}
-            <Card className="lg:col-span-12">
-              <CardHeader>
-                <CardTitle className="text-sm font-extrabold uppercase tracking-wider">Ward Efficiency Breakdown</CardTitle>
-                <CardDescription className="text-[10px] font-bold">Percentage of reported bin overflow requests closed per ward sector</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[240px] w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={summary.wardPerformance}>
-                      <XAxis dataKey="name" stroke="currentColor" className="text-[9px] opacity-60" />
-                      <YAxis stroke="currentColor" className="text-[9px] opacity-60" />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: "var(--card-bg)",
-                          borderColor: "var(--card-border)",
-                          borderRadius: "12px",
-                          fontSize: "10px",
-                          fontWeight: "bold",
-                        }}
-                      />
-                      <Bar dataKey="efficiency" name="Response Efficiency (%)" fill="#0F5C3B" radius={[8, 8, 0, 0]} maxBarSize={45} />
-                      <Bar dataKey="requests" name="Total Reports (Count)" fill="#3B82F6" radius={[8, 8, 0, 0]} maxBarSize={45} />
-                      <Legend iconSize={8} iconType="circle" wrapperStyle={{ fontSize: "10px", fontWeight: "bold" }} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
+
+
 
           </div>
         </>

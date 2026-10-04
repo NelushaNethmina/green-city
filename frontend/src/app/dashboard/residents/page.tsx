@@ -170,7 +170,7 @@ export default function ResidentsPage() {
   };
 
   const handleExportCSV = () => {
-    const headers = ["Full Name", "Email Address", "Phone Number", "Home Address", "Ward Sector", "Status", "Coordinates"];
+    const headers = ["Full Name", "Email Address", "Phone Number", "Home Address", "Status", "Coordinates"];
     const rows = residents.map((r) => [
       r.name,
       r.email,
@@ -324,36 +324,7 @@ export default function ResidentsPage() {
         </div>
       </div>
 
-      {/* Ward & Status Filter Bar */}
-      <div className="flex flex-wrap gap-4 items-center p-4 bg-card-bg border border-card-border rounded-2xl">
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] font-bold text-muted-text uppercase tracking-wider">Ward Sector:</span>
-          <select
-            value={wardFilter}
-            onChange={(e) => setWardFilter(e.target.value)}
-            className="text-[11px] font-bold text-foreground bg-card-bg border border-card-border rounded-xl px-2 py-1 focus:outline-none focus:border-primary-green"
-          >
-            <option value="All">All Wards</option>
-            <option value="Badulla Ward 01">Badulla Ward 01</option>
-            <option value="Badulla Ward 02">Badulla Ward 02</option>
-            <option value="Badulla Ward 03">Badulla Ward 03</option>
-            <option value="Badulla Ward 04">Badulla Ward 04</option>
-          </select>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] font-bold text-muted-text uppercase tracking-wider">Profile Access:</span>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="text-[11px] font-bold text-foreground bg-card-bg border border-card-border rounded-xl px-2 py-1 focus:outline-none focus:border-primary-green"
-          >
-            <option value="All">All Profiles</option>
-            <option value="Active">Active Accounts</option>
-            <option value="Suspended">Suspended / Blocked</option>
-          </select>
-        </div>
-      </div>
+      
 
       {/* Main directory table */}
       <div className="bg-card-bg border border-card-border rounded-3xl p-5 shadow-sm">

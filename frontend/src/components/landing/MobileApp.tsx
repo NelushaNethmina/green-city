@@ -59,10 +59,11 @@ const featuresList = [
   { icon: <User className="h-5 w-5 text-primary-green" />, text: "Select User Type" },
   { icon: <KeyRound className="h-5 w-5 text-primary-green" />, text: "Secure Login" },
   { icon: <MapPin className="h-5 w-5 text-primary-green" />, text: "User Registration" },
-  { icon: <Layers className="h-5 w-5 text-primary-green" />, text: "Waste Category Selection" },
+  { icon: <Layers className="h-5 w-5 text-primary-green" />, text: "Driver Registration" },
   { icon: <Bell className="h-5 w-5 text-primary-green" />, text: "Waste Category Selection" },
   { icon: <HistoryIcon className="h-5 w-5 text-primary-green" />, text: "Collection History" },
   { icon: <UserCheck className="h-5 w-5 text-primary-green" />, text: "User Profile" },
+  { icon: <MapPin className="h-5 w-5 text-primary-green" />, text: "Navigation Map" },
 ];
 
 export function MobileApp() {

@@ -358,16 +358,7 @@ export default function DriversPage() {
             error={errors.vehicleNo?.message}
             {...register("vehicleNo", { required: "Please select a truck." })}
           />
-          <Select
-            label="Designated Ward Limit *"
-            options={[
-              { value: "Badulla Ward 01", label: "Badulla Ward 01 (Central)" },
-              { value: "Badulla Ward 02", label: "Badulla Ward 02 (Eastern)" },
-              { value: "Badulla Ward 03", label: "Badulla Ward 03 (Southern)" },
-              { value: "Badulla Ward 04", label: "Badulla Ward 04 (Northern)" },
-            ]}
-            {...register("currentWard")}
-          />
+  
           <Select
             label="Duty Status *"
             options={[
