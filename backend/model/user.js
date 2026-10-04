@@ -70,6 +70,12 @@ const userSchema = new mongoose.Schema(
             default : "active"
         },
 
+        firebaseUid : {
+            type : String,
+            unique : true,
+            sparse : true
+        },
+
         ward : {
             type : String,
             default : ""
@@ -85,6 +91,7 @@ const userSchema = new mongoose.Schema(
                 type: Number,
                 default : null
             }
+            
         },
     },
 

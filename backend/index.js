@@ -9,12 +9,15 @@ import dailyWasteCollectionRouter from "./routes/dailyWasteCollectionRouter.js"
 import notificationRouter from "./routes/notificationRouter.js"
 import scheduleRouter from "./routes/scheduleRouter.js"
 import settingRouter from "./routes/settingRouter.js"
+import requestRouter from "./routes/requestRouter.js"
+
 
 
 const mongoURI = "mongodb+srv://admin:1234@cluster0.az5seek.mongodb.net/?appName=Cluster0"
 const app = express()
 app.use(cors())
 app.use(express.json({ limit : "2mb" }))
+
 
 
 app.use(
@@ -57,13 +60,22 @@ app.use("/dailyWasteCollection", dailyWasteCollectionRouter)
 app.use("/notification", notificationRouter)
 app.use("/schedule", scheduleRouter)
 app.use("/setting", settingRouter)
+app.use("/request", requestRouter)
 
 mongoose.connect(mongoURI).then(
     ()=>{
         console.log("MongoDB Conected Sucessfully")
+        import("./sync.js").then(
+            (sync)=>{
+                sync.default()
+            }
+        ).catch(
+            (err)=>{
+                console.error("Firebase sync failed to start:", err.message)
+            }
+        )
     }
 )
-
 
 
 

@@ -46,6 +46,7 @@ import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
+import { requestService, WasteRequest } from "@/services/request.service";
 
 // Safe Dynamic Import of Map
 const LiveTrackingMap = dynamic(
@@ -95,23 +96,27 @@ interface QuickNotificationForm {
 
 export default function OverviewPage() {
   const store = useGreenCityStore();
-    const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [drivers, setDrivers] = useState<Driver[]>([]);
   const [residents, setResidents] = useState<ResidentUser[]>([]);
   const [dailyCollections, setDailyCollections] = useState<DailyCollection[]>([]);
   const [routes, setRoutes] = useState<RouteAssignment[]>([]);
+  const [requests, setRequests] = useState<WasteRequest[]>([]);
 
   const loadAll = async () => {
     try {
-      const [d, r, c, rt] = await Promise.all([
+      
+      const [d, r, c, rt, rq] = await Promise.all([
         driverService.getAll(),
         residentService.getAll(),
         collectionService.getDailyCollections(),
         routeService.getAll(),
+        requestService.getAll(),
       ]);
       setDrivers(d);
       setResidents(r);
       setDailyCollections(c);
       setRoutes(rt);
+      setRequests(rq);
     } catch {
       toast.error("Failed to load dashboard data.");
     }
@@ -136,10 +141,11 @@ export default function OverviewPage() {
     const todayCols = dailyCollections.filter((c) => c.date === todayStr);
     const todayWeight = todayCols.reduce((sum, c) => sum + c.weightKg, 0);
 
-    const pending = routes.filter((r) => r.status === "Pending").length;
-    const completed = routes.filter((r) => r.status === "Completed").length;
+    const pending = requests.filter((r) => r.status === "Pending").length;
+    const completed = requests.filter((r) => r.status === "Collected").length;
     const residentCount = residents.length;
     const driverCount = drivers.length;
+    
 
     return {
       todayWeight: todayWeight.toFixed(1),
@@ -148,7 +154,7 @@ export default function OverviewPage() {
       residentCount,
       driverCount,
     };
-  }, [store.bins, residents, drivers, dailyCollections]);
+  }, [requests, residents, drivers, dailyCollections]);
 
   // Today's schedule assignments list
   const todaysSchedule = useMemo(() => {
@@ -288,7 +294,7 @@ export default function OverviewPage() {
           </div>
         </div>
         <div className="w-full h-[400px]">
-          <LiveTrackingMap bins={store.bins} drivers={drivers} />
+          <LiveTrackingMap bins={requests} drivers={drivers} />
         </div>
       </div>
 
@@ -313,7 +319,7 @@ export default function OverviewPage() {
           <CardContent className="pt-5 flex flex-col gap-1">
             <span className="text-[12px] font-bold text-muted-text uppercase tracking-wider block">Pending Collections</span>
             <span className="text-xl font-black text-foreground mt-1 block">
-              {metrics.pending} <span className="text-xs text-muted-text font-semibold">Bins</span>
+              {metrics.pending} <span className="text-xs text-muted-text font-semibold">Requests</span>
             </span>
             <span className="text-[11px] text-amber-500 font-bold flex items-center gap-1 mt-2">
               <Clock className="h-3 w-3 animate-pulse" />
