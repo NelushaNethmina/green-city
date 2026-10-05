@@ -317,10 +317,7 @@ export default function ResidentsPage() {
             <Download className="h-4 w-4 mr-1.5" />
             Export CSV
           </Button>
-          <Button onClick={handleOpenAdd} variant="primary" size="sm" className="text-xs shrink-0 cursor-pointer">
-            <Plus className="h-4 w-4 mr-1.5" />
-            Add Resident
-          </Button>
+          
         </div>
       </div>
 
