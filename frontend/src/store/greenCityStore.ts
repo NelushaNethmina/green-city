@@ -26,6 +26,9 @@ export interface Driver {
   currentWard: string;
   assignedRoute?: string;
   collectionDay?: string;
+  latitude?: number;
+  longitude?: number;
+  locationUpdatedAt?: string;
 }
 
 export interface ResidentUser {

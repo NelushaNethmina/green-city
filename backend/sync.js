@@ -71,10 +71,17 @@ async function upsertUser(id, d){
         user.nic = d.nic
     }
 
-    if(d.latitude != null && d.longitude != null){
+    const latitude = d.lat ?? d.latitude
+    const longitude = d.lon ?? d.longitude
+
+    if(latitude != null && longitude != null){
         user.currentLocation = {
-            latitude : d.latitude,
-            longitude : d.longitude
+            latitude : latitude,
+            longitude : longitude
+        }
+
+        if(d.locationUpdatedAt){
+            user.locationUpdatedAt = toDate(d.locationUpdatedAt)
         }
     }
 
@@ -113,7 +120,9 @@ function listen(label, query, upsert, remove){
                     else{
                         await upsert(change.doc.id, change.doc.data())
                     }
-                    console.log("[sync:" + label + "] " + change.type + " " + change.doc.id)
+                    if(!(label === "users" && change.type === "modified")){
+                        console.log("[sync:" + label + "] " + change.type + " " + change.doc.id)
+                    }
                 }
                 catch(err){
                     console.error("[sync:" + label + "]", err.message)

@@ -37,7 +37,7 @@ import {
 } from "recharts";
 
 import { useGreenCityStore, Driver, ResidentUser, DailyCollection, RouteAssignment, BinLocation } from "@/store/greenCityStore";
-import { driverService } from "@/services/driver.service";
+import { driverService, DriverLocation } from "@/services/driver.service";
 import { residentService } from "@/services/resident.service";
 import { collectionService } from "@/services/collection.service";
 import { routeService } from "@/services/route.service";
@@ -105,6 +105,30 @@ export default function OverviewPage() {
   const [dailyCollections, setDailyCollections] = useState<DailyCollection[]>([]);
   const [routes, setRoutes] = useState<RouteAssignment[]>([]);
   const [requests, setRequests] = useState<WasteRequest[]>([]);
+
+    const [driverLocations, setDriverLocations] = useState<DriverLocation[]>([]);
+
+  const liveDrivers = useMemo<Driver[]>(() => {
+    return drivers.map((d) => {
+      const loc = driverLocations.find((l) => l.id === d.id);
+      return loc
+        ? { ...d, latitude: loc.latitude, longitude: loc.longitude, locationUpdatedAt: loc.updatedAt }
+        : d;
+    });
+  }, [drivers, driverLocations]);
+
+  useEffect(() => {
+    const refreshLocations = async () => {
+      if (document.hidden) return;
+      try {
+        setDriverLocations(await driverService.getLocations());
+      } catch {}
+    };
+
+    refreshLocations();
+    const timer = setInterval(refreshLocations, 5000);
+    return () => clearInterval(timer);
+  }, []);
 
   const loadAll = async () => {
     const results = await Promise.allSettled([
@@ -321,7 +345,7 @@ export default function OverviewPage() {
           </div>
         </div>
         <div className="w-full h-[400px]">
-          <LiveTrackingMap bins={mapBins} drivers={drivers} />
+          <LiveTrackingMap bins={mapBins} drivers={liveDrivers} />
         </div>
       </div>
 
@@ -647,7 +671,7 @@ export default function OverviewPage() {
         </form>
       </Modal>
 
-      {/* MODAL 4: SEND send BROADCAST */}
+      {/* MODAL 4: SEND send   BROADCAST */}
       <Modal isOpen={modalType === "notification"} onClose={() => setModalType(null)} title="Quick Send System Notification" className="max-w-md">
         <form onSubmit={ntfForm.handleSubmit(onSendNotification)} className="space-y-4">
           <Select

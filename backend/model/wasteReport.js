@@ -18,7 +18,7 @@ const wasteReportSchema = new mongoose.Schema(
 
         category: {
             type : String,
-            enum : ["Food Waste", "Plastic Waste", "Polythene Waste", "Paper Waste", "Glass Waste"],
+            enum : ["food Waste", "Plastic Waste", "Polythene Waste", "paper Waste", "glass Waste"],
             required : true
 
         },
