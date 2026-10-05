@@ -29,9 +29,10 @@ const scheduleSchema = new mongoose.Schema({
     wasteCategory:{
         type: String,
         required : true,
-        enum :["food waste","plastic","polythene", "paper", "glass"]
+        enum :["food waste","plastic Waste","polythene Waste", "paper Waste", "glass Waste"]
     },
 
+    
     assignRoute : {
         type: String,
         required : true
