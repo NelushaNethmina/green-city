@@ -2,8 +2,24 @@ import Schedule from "./model/Schedule.js"
 
 const VEHICLE_KEY = "vehicleNo"
 
-function toTitleCase(value){
-    return String(value || "").replace(/\b\w/g, (c)=>c.toUpperCase())
+const APP_WASTE_TYPES = {
+    "food waste" : "Food Waste",
+    "plastic" : "Plastic Waste",
+    "polythene" : "Polythene Waste",
+    "paper" : "Paper Waste",
+    "glass" : "Glass Waste"
+}
+
+function toAppWasteType(value){
+    const key = String(value || "").trim().toLowerCase()
+
+    if(APP_WASTE_TYPES[key]){
+        return APP_WASTE_TYPES[key]
+    }
+
+    const name = key.replace(/\b\w/g, (c)=>c.toUpperCase())
+
+    return name.endsWith("Waste") ? name : name + " Waste"
 }
 
 function toSriLankaMidnight(date){
@@ -33,7 +49,7 @@ async function syncNextCollection(){
     const data = {
         asignRoute : next.assignRoute,
         date : toSriLankaMidnight(next.collectionDate),
-        wasteType : toTitleCase(next.wasteCategory)
+        wasteType : toAppWasteType(next.wasteCategory)
     }
 
     data[VEHICLE_KEY] = next.vechicle ? next.vechicle.vechicleNumber : ""
@@ -59,7 +75,7 @@ async function syncRouteDoc(scheduleNumber){
         asignRoute : schedule.assignRoute,
         date : toSriLankaMidnight(schedule.collectionDate),
         vehicleNo : schedule.vechicle ? schedule.vechicle.vechicleNumber : "",
-        wasteType : toTitleCase(schedule.wasteCategory),
+        wasteType : toAppWasteType(schedule.wasteCategory),
         distanceKm : schedule.distance,
         status : schedule.dispathStatus
     })

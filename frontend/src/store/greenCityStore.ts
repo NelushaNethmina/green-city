@@ -42,6 +42,7 @@ export interface ResidentUser {
   createdAt: string;
   latitude: number;
   longitude: number;
+  firebaseUid?: string;
 }
 
 export interface DailyCollection {

@@ -4,6 +4,11 @@ import Vechicle from "../model/vechicle.js"
 import { isAdmin } from "./userController.js"
 import { syncToFirebase } from "../nextCollection.js"
 
+function bumpScheduleNumber(scheduleNumber) {
+    const number = parseInt(String(scheduleNumber).replace("SC", "")) + 1
+    return "SC" + number.toString().padStart(6, "0")
+}
+
 export async function addSchedule(req, res) {
     if (!isAdmin(req)) {
         res.status(401).json({
@@ -13,21 +18,12 @@ export async function addSchedule(req, res) {
     }
 
     try {
-        const lateastSchedule = await Schedule.findOne().sort({ createdAt: -1 })
+        const latest = await Schedule.findOne().sort({ scheduleNumber: -1 })
 
         let scheduleNumber = "SC000001"
 
-        if (lateastSchedule != null) {
-
-            let lateastScheduleId = lateastSchedule.scheduleNumber
-            let lateastScheduleNumberString = lateastScheduleId.replace("SC", "")
-            let lateastScheduleNumber = parseInt(lateastScheduleNumberString)
-
-            let newScheduleNumber = lateastScheduleNumber + 1
-            let newScheduleNumberString = newScheduleNumber.toString().padStart(6, "0")
-
-            scheduleNumber = "SC" + newScheduleNumberString
-
+        if (latest != null) {
+            scheduleNumber = bumpScheduleNumber(latest.scheduleNumber)
         }
 
         const driver = await User.findOne({ email: req.body.driver })
@@ -55,15 +51,29 @@ export async function addSchedule(req, res) {
             return
         }
 
-        const schedule = new Schedule({
-            ...req.body,
-            scheduleNumber,
-            driver: driver._id,
-            vechicle: vechicle._id
+        let saved = false
 
-        })
+        for (let attempt = 0; attempt < 5 && !saved; attempt++) {
+            try {
+                const schedule = new Schedule({
+                    ...req.body,
+                    scheduleNumber,
+                    driver: driver._id,
+                    vechicle: vechicle._id
+                })
 
-        await schedule.save()
+                await schedule.save()
+                saved = true
+            }
+            catch (err) {
+                if (err.code === 11000 && attempt < 4) {
+                    scheduleNumber = bumpScheduleNumber(scheduleNumber)
+                }
+                else {
+                    throw err
+                }
+            }
+        }
 
         const warning = await syncToFirebase(scheduleNumber, false)
 
@@ -71,17 +81,14 @@ export async function addSchedule(req, res) {
             message: "Schedule Added Successfully !",
             warning: warning
         })
-
-
-
     }
     catch (err) {
+        console.error("[schedule:add]", err)
         res.status(500).json({
-            message: "Error Adding Schedule",
+            message: "Error Adding Schedule: " + err.message,
             error: err.message
         })
     }
-
 }
 
 

@@ -19,6 +19,7 @@ function toResident(u: any): ResidentUser {
     createdAt: u.createdAt,
     latitude: u.currentLocation?.latitude ?? 0,
     longitude: u.currentLocation?.longitude ?? 0,
+    firebaseUid: u.firebaseUid,
   };
 }
 

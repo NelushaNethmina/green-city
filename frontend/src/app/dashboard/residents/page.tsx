@@ -1,158 +1,196 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { Plus, Edit3, Trash2, ShieldAlert, ShieldCheck, MapPin, History, Download, Loader2 } from "lucide-react";
+import { Plus, Edit3, Trash2, MapPin, History, ShieldCheck, ShieldOff, Download, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { ResidentUser, BinLocation } from "@/store/greenCityStore";
+import { ResidentUser } from "@/store/greenCityStore";
 import { residentService } from "@/services/resident.service";
-import { collectionService } from "@/services/collection.service";
+import { requestService, WasteRequest } from "@/services/request.service";
 import { reportService } from "@/services/report.service";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import { Table, Column } from "@/components/ui/Table";
+import { Table, Column, TableFilter } from "@/components/ui/Table";
 import { Modal } from "@/components/ui/Modal";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
-import { Skeleton } from "@/components/ui/Skeleton";
 
-
-// Dynamic load of single resident map
 const ResidentLocationMap = dynamic(
   () => import("@/components/dashboard/ResidentLocationMap"),
   {
-    ssr: false,
-    loading: () => <Skeleton className="w-full h-[250px] rounded-2xl" />,
-  }
-);
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-[250px] rounded-2xl border border-card-border flex items-center justify-center text-xs font-bold text-muted-text">
+      Loading map...
+    </div>
+  ),
+});
 
 interface ResidentFormData {
   name: string;
   email: string;
   phone: string;
   address: string;
-  ward: string;
   latitude: string;
   longitude: string;
   status: "Active" | "Suspended";
 }
 
+const emptyForm: ResidentFormData = {
+  name: "",
+  email: "",
+  phone: "",
+  address: "",
+  latitude: "",
+  longitude: "",
+  status: "Active",
+};
+
+function errorText(err: any, fallback: string) {
+  return err?.response?.data?.message || err?.response?.data?.error || err?.message || fallback;
+}
+
+function formatDate(value: string | null) {
+  if (!value) return "-";
+  return new Date(value).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+function formatTime(value: string | null) {
+  if (!value) return "";
+  return new Date(value).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
+}
+
+function hasLocation(r: ResidentUser) {
+  return Number.isFinite(r.latitude) && Number.isFinite(r.longitude) && (r.latitude !== 0 || r.longitude !== 0);
+}
+
+function logVariant(status: WasteRequest["status"]) {
+  if (status === "Collected") return "success";
+  if (status === "Assigned") return "info";
+  if (status === "Pending") return "warning";
+  return "default";
+}
+
+function logLabel(log: WasteRequest) {
+  if (log.status === "Collected") return "Completed";
+  if (log.status === "Other") return log.rawStatus || "Unknown";
+  return log.status;
+}
+
 export default function ResidentsPage() {
   const [residents, setResidents] = useState<ResidentUser[]>([]);
-  const [bins, setBins] = useState<BinLocation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Modals state
-  const [isOpen, setIsOpen] = useState(false);
+  const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [isLocationOpen, setIsLocationOpen] = useState(false);
+  const [isMapOpen, setIsMapOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
-  // Focus Context states
   const [editingResident, setEditingResident] = useState<ResidentUser | null>(null);
   const [selectedResident, setSelectedResident] = useState<ResidentUser | null>(null);
 
-  // Filters state
-  const [wardFilter, setWardFilter] = useState("All");
-  const [statusFilter, setStatusFilter] = useState("All");
+  const [logs, setLogs] = useState<WasteRequest[]>([]);
+  const [logsLoading, setLogsLoading] = useState(false);
+  const [logsError, setLogsError] = useState("");
 
   const {
     register,
     handleSubmit,
-    setValue,
     reset,
     formState: { errors },
-  } = useForm<ResidentFormData>({
-    defaultValues: {
-      name: "",
-      email: "",
-      phone: "",
-      address: "",
-      ward: "Badulla Ward 03",
-      latitude: "6.9934",
-      longitude: "81.0550",
-      status: "Active",
-    },
-  });
+  } = useForm<ResidentFormData>({ defaultValues: emptyForm });
 
-  const loadData = async () => {
+  const loadResidents = async () => {
     setIsLoading(true);
     try {
-      const resData = await residentService.getAll();
-      const binData = await collectionService.getAllBins();
-      setResidents(resData);
-      setBins(binData);
+      setResidents(await residentService.getAll());
     } catch {
-      toast.error("Failed to load resident records.");
+      toast.error("Failed to load residents.");
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    loadData();
+    loadResidents();
   }, []);
 
   const handleOpenAdd = () => {
     setEditingResident(null);
-    reset({
-      name: "",
-      email: "",
-      phone: "",
-      address: "",
-      ward: "Badulla Ward 03",
-      latitude: "6.9934",
-      longitude: "81.0550",
-      status: "Active",
-    });
-    setIsOpen(true);
+    reset(emptyForm);
+    setIsFormOpen(true);
   };
 
   const handleOpenEdit = (resident: ResidentUser) => {
     setEditingResident(resident);
-    setValue("name", resident.name);
-    setValue("email", resident.email);
-    setValue("phone", resident.phone);
-    setValue("address", resident.address);
-    setValue("ward", resident.ward);
-    setValue("latitude", String(resident.latitude || 6.9934));
-    setValue("longitude", String(resident.longitude || 81.0550));
-    setValue("status", resident.status);
-    setIsOpen(true);
+    reset({
+      name: resident.name,
+      email: resident.email,
+      phone: resident.phone,
+      address: resident.address,
+      latitude: hasLocation(resident) ? String(resident.latitude) : "",
+      longitude: hasLocation(resident) ? String(resident.longitude) : "",
+      status: resident.status,
+    });
+    setIsFormOpen(true);
   };
 
   const onSubmit = async (data: ResidentFormData) => {
+    const hasCoords = data.latitude.trim() !== "" && data.longitude.trim() !== "";
+    const latitude = hasCoords ? Number(data.latitude) : 0;
+    const longitude = hasCoords ? Number(data.longitude) : 0;
+
+    if (hasCoords && (Number.isNaN(latitude) || Number.isNaN(longitude))) {
+      toast.error("Latitude and longitude must be numbers.");
+      return;
+    }
+
     try {
-      const payload = {
-        ...data,
-        latitude: parseFloat(data.latitude),
-        longitude: parseFloat(data.longitude),
-      };
       if (editingResident) {
-        await residentService.update(editingResident.id, payload);
+        const updates: Partial<ResidentUser> = {
+          name: data.name.trim(),
+          email: data.email.trim(),
+          phone: data.phone.trim(),
+          address: data.address.trim(),
+          status: data.status,
+        };
+        if (hasCoords) {
+          updates.latitude = latitude;
+          updates.longitude = longitude;
+        }
+        await residentService.update(editingResident.id, updates);
         toast.success("Resident details updated successfully.");
       } else {
-        await residentService.create(payload);
-        toast.success("New resident registered successfully.");
+        await residentService.create({
+          name: data.name.trim(),
+          email: data.email.trim(),
+          phone: data.phone.trim(),
+          address: data.address.trim(),
+          ward: "-",
+          status: data.status,
+          latitude,
+          longitude,
+        });
+        toast.success("Resident registered successfully.");
       }
-      setIsOpen(false);
-      reset();
-      loadData();
-    } catch {
-      toast.error("Error saving resident profile.");
+      setIsFormOpen(false);
+      loadResidents();
+    } catch (err: any) {
+      toast.error(errorText(err, "Error processing resident details."));
     }
   };
 
   const handleToggleStatus = async (resident: ResidentUser) => {
     try {
-      const nextStatus = resident.status === "Active" ? "Suspended" as const : "Active" as const;
-      await residentService.update(resident.id, { status: nextStatus });
-      toast.success(`Resident account status changed to ${nextStatus}`);
-      loadData();
-    } catch {
-      toast.error("Failed to update status.");
+      await residentService.update(resident.id, {
+        status: resident.status === "Active" ? "Suspended" : "Active",
+      });
+      toast.success(resident.status === "Active" ? "Resident suspended." : "Resident activated.");
+      loadResidents();
+    } catch (err: any) {
+      toast.error(errorText(err, "Error changing profile access."));
     }
   };
 
@@ -160,43 +198,55 @@ export default function ResidentsPage() {
     if (!selectedResident) return;
     try {
       await residentService.delete(selectedResident.id);
-      toast.success("Resident account deleted.");
+      toast.success("Resident profile deleted.");
+      loadResidents();
+    } catch (err: any) {
+      toast.error(errorText(err, "Error removing resident profile."));
+    } finally {
       setIsDeleteOpen(false);
       setSelectedResident(null);
-      loadData();
+    }
+  };
+
+  const openMap = (resident: ResidentUser) => {
+    setSelectedResident(resident);
+    setIsMapOpen(true);
+  };
+
+  const openHistory = async (resident: ResidentUser) => {
+    setSelectedResident(resident);
+    setLogs([]);
+    setLogsError("");
+    setIsHistoryOpen(true);
+
+    if (!resident.firebaseUid) return;
+
+    setLogsLoading(true);
+    try {
+      setLogs(await requestService.getByResident(resident.firebaseUid));
     } catch {
-      toast.error("Failed to delete resident.");
+      setLogsError("Failed to load collection logs.");
+    } finally {
+      setLogsLoading(false);
     }
   };
 
   const handleExportCSV = () => {
-    const headers = ["Full Name", "Email Address", "Phone Number", "Home Address", "Status", "Coordinates"];
-    const rows = residents.map((r) => [
-      r.name,
-      r.email,
-      r.phone,
-      r.address,
-      r.ward,
-      r.status,
-      `${r.latitude},${r.longitude}`,
-    ]);
+    const headers = ["Citizen Name", "Email", "Phone", "Address", "Status", "Registered"];
+    const rows = residents.map((r) => [r.name, r.email, r.phone, r.address, r.status, formatDate(r.createdAt)]);
     reportService.exportToCSV(headers, rows, "GreenCity_Residents_Report");
   };
 
-  // Filtered residents list
-  const filteredResidents = useMemo(() => {
-    return residents.filter((r) => {
-      const wardMatch = wardFilter === "All" || r.ward === wardFilter;
-      const statusMatch = statusFilter === "All" || r.status === statusFilter;
-      return wardMatch && statusMatch;
-    });
-  }, [residents, wardFilter, statusFilter]);
-
-  // Selected resident's completed collection history
-  const residentHistory = useMemo(() => {
-    if (!selectedResident) return [];
-    return bins.filter((b) => b.reporterName.toLowerCase() === selectedResident.name.toLowerCase());
-  }, [selectedResident, bins]);
+  const filters: TableFilter[] = [
+    {
+      key: "status",
+      label: "Profile Access",
+      options: [
+        { value: "Active", label: "Active" },
+        { value: "Suspended", label: "Suspended" },
+      ],
+    },
+  ];
 
   const columns: Column<ResidentUser>[] = [
     {
@@ -214,77 +264,61 @@ export default function ResidentsPage() {
       header: "Phone Number",
       sortable: true,
     },
-    
     {
       key: "status",
       header: "Status",
       sortable: true,
-      render: (item) => {
-        return <Badge variant={item.status === "Active" ? "success" : "error"}>{item.status}</Badge>;
-      },
+      render: (item) => (
+        <Badge variant={item.status === "Active" ? "success" : "error"}>{item.status}</Badge>
+      ),
     },
     {
       key: "actions",
       header: "Actions",
       render: (item) => (
         <div className="flex items-center gap-2">
-          {/* Map Location */}
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => {
-              setSelectedResident(item);
-              setIsLocationOpen(true);
-            }}
+            onClick={() => openMap(item)}
             className="p-1 h-7 w-7 rounded-full text-blue-500 hover:bg-blue-500/5"
-            title="View Location Coordinates"
+            title="View Location"
           >
             <MapPin className="h-3.5 w-3.5" />
           </Button>
 
-          {/* History */}
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => {
-              setSelectedResident(item);
-              setIsHistoryOpen(true);
-            }}
-            className="p-1 h-7 w-7 rounded-full text-indigo-500 hover:bg-indigo-500/5"
-            title="View Collection Logs"
+            onClick={() => openHistory(item)}
+            className="p-1 h-7 w-7 rounded-full text-blue-500 hover:bg-blue-500/5"
+            title="Collection History"
           >
             <History className="h-3.5 w-3.5" />
           </Button>
 
-          {/* Block/Unblock toggle */}
           <Button
             variant="ghost"
             size="sm"
             onClick={() => handleToggleStatus(item)}
-            className={`p-1 h-7 w-7 rounded-full transition-colors ${
+            className={`p-1 h-7 w-7 rounded-full ${
               item.status === "Active" ? "text-amber-500 hover:bg-amber-500/5" : "text-green-500 hover:bg-green-500/5"
             }`}
-            title={item.status === "Active" ? "Block Resident" : "Activate Resident"}
+            title={item.status === "Active" ? "Suspend Access" : "Activate Access"}
           >
-            {item.status === "Active" ? (
-              <ShieldAlert className="h-3.5 w-3.5" />
-            ) : (
-              <ShieldCheck className="h-3.5 w-3.5" />
-            )}
+            {item.status === "Active" ? <ShieldOff className="h-3.5 w-3.5" /> : <ShieldCheck className="h-3.5 w-3.5" />}
           </Button>
 
-          {/* Edit details */}
           <Button
             variant="ghost"
             size="sm"
             onClick={() => handleOpenEdit(item)}
             className="p-1 h-7 w-7 rounded-full text-primary-green hover:bg-primary-green/5"
-            title="Edit Profile"
+            title="Edit Details"
           >
             <Edit3 className="h-3.5 w-3.5" />
           </Button>
 
-          {/* Delete resident */}
           <Button
             variant="ghost"
             size="sm"
@@ -293,7 +327,7 @@ export default function ResidentsPage() {
               setIsDeleteOpen(true);
             }}
             className="p-1 h-7 w-7 rounded-full text-red-500 hover:bg-red-500/5 hover:text-red-600"
-            title="Delete Resident"
+            title="Delete Profile"
           >
             <Trash2 className="h-3.5 w-3.5" />
           </Button>
@@ -302,14 +336,16 @@ export default function ResidentsPage() {
     },
   ];
 
+  const pendingCount = logs.filter((l) => l.status === "Pending").length;
+  const completedCount = logs.filter((l) => l.status === "Collected").length;
+
   return (
-    <div className="flex flex-col gap-6 w-full">
-      {/* Header bar */}
+    <div className="flex flex-col gap-6 w-full pb-8">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-xl font-extrabold text-foreground">Resident Directory</h2>
+          <h2 className="text-xl font-extrabold text-foreground">Resident Management</h2>
           <p className="text-xs text-muted-text mt-0.5">
-            Audit registered municipal app users, update house locations, or lock suspended profiles.
+            Manage citizen profiles, view their locations and check their waste collection history.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -317,42 +353,42 @@ export default function ResidentsPage() {
             <Download className="h-4 w-4 mr-1.5" />
             Export CSV
           </Button>
-          
+          <Button onClick={handleOpenAdd} variant="primary" size="sm" className="text-xs shrink-0 cursor-pointer">
+            <Plus className="h-4 w-4 mr-1.5" />
+            Add Resident
+          </Button>
         </div>
       </div>
 
-      
-
-      {/* Main directory table */}
       <div className="bg-card-bg border border-card-border rounded-3xl p-5 shadow-sm">
         {isLoading ? (
           <div className="py-20 flex justify-center items-center gap-2 text-xs font-bold text-muted-text">
             <Loader2 className="h-5 w-5 animate-spin text-primary-green" />
-            Loading Residents Database...
+            Loading Residents...
           </div>
         ) : (
           <Table
             columns={columns}
-            data={filteredResidents}
-            searchKeys={["name", "email", "phone", "ward"]}
-            searchPlaceholder="Search by name, email, phone, or ward..."
-            emptyTitle="No citizens found"
-            emptyDescription="Click Add Resident to register a new user profile."
+            data={residents}
+            searchKeys={["name", "email", "phone", "address"]}
+            searchPlaceholder="Search by name, email, phone, or address..."
+            filters={filters}
+            emptyTitle="No residents found"
+            emptyDescription="Residents registered in the mobile app appear here automatically."
             itemsPerPage={6}
           />
         )}
       </div>
 
-      {/* Modal Dialog: Add/Edit Resident */}
       <Modal
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-        title={editingResident ? "Edit Citizen Profile" : "Register New Resident"}
+        isOpen={isFormOpen}
+        onClose={() => setIsFormOpen(false)}
+        title={editingResident ? "Edit Resident Details" : "Register New Resident"}
         className="max-w-md"
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <Input
-            label="Full Name *"
+            label="Citizen Name *"
             placeholder="Amara Perera"
             error={errors.name?.message}
             {...register("name", { required: "Name is required." })}
@@ -365,102 +401,125 @@ export default function ResidentsPage() {
             {...register("email", { required: "Email is required." })}
           />
           <Input
-            label="Mobile Number *"
+            label="Phone Number *"
             placeholder="077-123-4567"
             error={errors.phone?.message}
             {...register("phone", { required: "Phone number is required." })}
           />
           <Input
-            label="Home Address *"
+            label="Address"
             placeholder="12 Library Road, Badulla"
-            error={errors.address?.message}
-            {...register("address", { required: "Address is required." })}
+            {...register("address")}
           />
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              label="Latitude *"
-              placeholder="6.9934"
-              error={errors.latitude?.message}
-              {...register("latitude", { required: "Latitude required" })}
-            />
-            <Input
-              label="Longitude *"
-              placeholder="81.0550"
-              error={errors.longitude?.message}
-              {...register("longitude", { required: "Longitude required" })}
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <Input label="Latitude" placeholder="6.9934" {...register("latitude")} />
+            <Input label="Longitude" placeholder="81.0550" {...register("longitude")} />
           </div>
           <Select
-            label="Municipal Ward Limit *"
+            label="Profile Access *"
             options={[
-              { value: "Badulla Ward 01", label: "Badulla Ward 01 (Central)" },
-              { value: "Badulla Ward 02", label: "Badulla Ward 02 (Eastern)" },
-              { value: "Badulla Ward 03", label: "Badulla Ward 03 (Southern)" },
-              { value: "Badulla Ward 04", label: "Badulla Ward 04 (Northern)" },
-            ]}
-            {...register("ward")}
-          />
-          <Select
-            label="Account Status *"
-            options={[
-              { value: "Active", label: "Active Access" },
-              { value: "Suspended", label: "Suspended / Blocked" },
+              { value: "Active", label: "Active" },
+              { value: "Suspended", label: "Suspended" },
             ]}
             {...register("status")}
           />
 
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-card-border">
-            <Button variant="ghost" size="sm" type="button" onClick={() => setIsOpen(false)}>
+            <Button variant="ghost" size="sm" type="button" onClick={() => setIsFormOpen(false)}>
               Cancel
             </Button>
             <Button variant="primary" size="sm" type="submit">
-              {editingResident ? "Save Changes" : "Create Citizen"}
+              {editingResident ? "Save Changes" : "Register Resident"}
             </Button>
           </div>
         </form>
       </Modal>
 
-      {/* Modal Dialog: View Location Map */}
       <Modal
-        isOpen={isLocationOpen}
-        onClose={() => {
-          setIsLocationOpen(false);
-          setSelectedResident(null);
-        }}
-        title={`${selectedResident?.name}'s Location Coordinates`}
-        className="max-w-md"
+        isOpen={isMapOpen}
+        onClose={() => setIsMapOpen(false)}
+        title={(selectedResident ? selectedResident.name : "") + "'s Location"}
+        className="max-w-lg"
+      >
+        {selectedResident && hasLocation(selectedResident) ? (
+          <ResidentLocationMap
+            latitude={selectedResident.latitude}
+            longitude={selectedResident.longitude}
+            name={selectedResident.name}
+          />
+        ) : (
+          <div className="py-8 text-center text-xs font-bold text-muted-text border border-dashed border-card-border rounded-2xl">
+            No coordinates are registered for this resident.
+          </div>
+        )}
+      </Modal>
+
+      <Modal
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+        title={(selectedResident ? selectedResident.name : "") + "'s Collection Log History"}
+        className="max-w-lg"
       >
         <div className="space-y-4">
-          <p className="text-[11px] text-muted-text">
-            Home location tags are captured automatically when residents report bin overflow points.
-          </p>
-          {selectedResident && (
-            <ResidentLocationMap
-              latitude={selectedResident.latitude || 6.9934}
-              longitude={selectedResident.longitude || 81.0550}
-              name={selectedResident.name}
-            />
+          
+
+          {logsLoading ? (
+            <div className="py-10 flex justify-center items-center gap-2 text-xs font-bold text-muted-text">
+              <Loader2 className="h-5 w-5 animate-spin text-primary-green" />
+              Loading collection logs...
+            </div>
+          ) : logsError ? (
+            <div className="py-8 text-center text-xs font-bold text-red-500">{logsError}</div>
+          ) : logs.length === 0 ? (
+            <div className="py-8 text-center text-xs font-bold text-muted-text border border-dashed border-card-border rounded-2xl">
+              {selectedResident && !selectedResident.firebaseUid
+                ? "This resident was added from the web panel and has no mobile app requests."
+                : "No collection logs found for this resident."}
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center gap-4 text-[11px] font-bold text-muted-text uppercase tracking-wider">
+                <span>Total: {logs.length}</span>
+                <span className="text-amber-500">Pending: {pendingCount}</span>
+                <span className="text-green-500">Completed: {completedCount}</span>
+              </div>
+              <div className="flex flex-col gap-2 max-h-[320px] overflow-y-auto pr-1">
+                {logs.map((log) => (
+                  <div
+                    key={log.id}
+                    className="p-3 rounded-2xl border border-card-border bg-card-bg/30 flex flex-col gap-1.5"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-bold text-foreground">{log.wasteType}</span>
+                      <Badge variant={logVariant(log.status)}>{logLabel(log)}</Badge>
+                    </div>
+                    <span className="text-xs text-muted-text">{log.address || "No address"}</span>
+                    <div className="flex items-center justify-between text-[11px] text-muted-text font-semibold">
+                      <span>
+                        Requested: {formatDate(log.createdAt)} {formatTime(log.createdAt)}
+                      </span>
+                      <span>{log.completedAt ? "Completed: " + formatDate(log.completedAt) : ""}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
+
           <div className="flex justify-end pt-3 border-t border-card-border">
-            <Button variant="ghost" size="sm" onClick={() => {
-              setIsLocationOpen(false);
-              setSelectedResident(null);
-            }}>
-              Dismiss Map
+            <Button variant="ghost" size="sm" onClick={() => setIsHistoryOpen(false)} className="cursor-pointer">
+              Close History
             </Button>
           </div>
         </div>
       </Modal>
 
-      
-
-      {/* Confirm Dialog: Delete Resident */}
       <ConfirmDialog
         isOpen={isDeleteOpen}
         onClose={() => setIsDeleteOpen(false)}
         onConfirm={handleDeleteConfirm}
         title="Delete Resident Profile"
-        description={`Are you sure you want to permanently delete the profile of "${selectedResident?.name}"?`}
+        description={`Are you sure you want to permanently delete the profile of "${selectedResident?.name}"? Residents registered in the mobile app will also lose their login account.`}
         confirmText="Permanently Delete"
       />
     </div>
