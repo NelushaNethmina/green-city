@@ -76,10 +76,7 @@ const userSchema = new mongoose.Schema(
             sparse : true
         },
 
-        ward : {
-            type : String,
-            default : ""
-        },
+        
 
         currentLocation : {
             latitude : {
