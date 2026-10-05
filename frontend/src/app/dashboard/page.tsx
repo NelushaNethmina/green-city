@@ -514,17 +514,17 @@ export default function OverviewPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-8 pt-0 flex-1 flex flex-col justify-end">
-            <div className="h-[290px] w-full">
+            <div className="h-[250px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={trendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <AreaChart data={trendData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorWeight" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#0F5C3B" stopOpacity={0.25} />
                       <stop offset="95%" stopColor="#0F5C3B" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <XAxis dataKey="name" stroke="currentColor" className="text-[11.5px] opacity-50" />
-                  <YAxis stroke="currentColor" className="text-[11.5px] opacity-50" />
+                  <XAxis dataKey="name" stroke="currentColor" className="text-[10.5px] opacity-50 width={35}" />
+                  <YAxis stroke="currentColor" className="text-[10.5px] opacity-50" />
                   <Tooltip
                     contentStyle={{
                       backgroundColor: "var(--card-bg)",
