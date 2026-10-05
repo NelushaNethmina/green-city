@@ -19,7 +19,7 @@ const dailyWasteCollectionSchema = new mongoose.Schema(
         category:{
             type: String,
             required : true,
-            enum : ["food Waste", "Plastic Waste", "Polythene Waste", "paper Waste", "glass Waste"]
+            enum : ["Food Waste", "Plastic Waste", "Polythene Waste", "Paper Waste", "Glass Waste"]
         },
 
         totalWeight:{
