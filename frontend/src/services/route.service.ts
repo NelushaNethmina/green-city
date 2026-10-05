@@ -1,5 +1,6 @@
 import axios from "axios";
 import { RouteAssignment } from "@/store/greenCityStore";
+import { toast } from "sonner";
 
 const url = "http://localhost:5000";
 
@@ -51,7 +52,7 @@ export const routeService = {
     return res.data.map(toRoute);
   },
 
-  create: async (assignment: Omit<RouteAssignment, "id">): Promise<void> => {
+   create: async (assignment: Omit<RouteAssignment, "id">): Promise<void> => {
     if (!assignment.routeName || !assignment.routeName.trim()) {
       throw new Error("Route name is required.");
     }
@@ -61,7 +62,7 @@ export const routeService = {
     if (!vechicle) throw new Error("This driver has no truck assigned. Assign a truck to the driver first.");
 
     try {
-      await axios.post(
+      const res = await axios.post(
         url + "/schedule",
         {
           driver: driver.email,
@@ -74,12 +75,13 @@ export const routeService = {
         },
         config()
       );
+      if (res.data.warning) toast.warning(res.data.warning);
     } catch (err) {
       throw new Error(errorMessage(err, "Failed to assign the route."));
     }
   },
 
-  update: async (id: string, updates: Partial<RouteAssignment>): Promise<void> => {
+    update: async (id: string, updates: Partial<RouteAssignment>): Promise<void> => {
     if (updates.routeName !== undefined && !updates.routeName.trim()) {
       throw new Error("Route name is required.");
     }
@@ -92,7 +94,7 @@ export const routeService = {
     if (!vechicle) throw new Error("This driver has no truck assigned. Assign a truck to the driver first.");
 
     try {
-      await axios.put(
+      const result = await axios.put(
         url + "/schedule/" + id,
         {
           driver: driver.email,
@@ -106,6 +108,7 @@ export const routeService = {
         },
         config()
       );
+      if (result.data.warning) toast.warning(result.data.warning);
     } catch (err) {
       throw new Error(errorMessage(err, "Failed to update the route."));
     }
@@ -113,7 +116,8 @@ export const routeService = {
 
   delete: async (id: string): Promise<void> => {
     try {
-      await axios.delete(url + "/schedule/" + id, config());
+      const res = await axios.delete(url + "/schedule/" + id, config());
+      if (res.data.warning) toast.warning(res.data.warning);
     } catch (err) {
       throw new Error(errorMessage(err, "Failed to delete the route."));
     }

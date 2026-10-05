@@ -2,6 +2,7 @@ import Schedule from "../model/Schedule.js"
 import User from "../model/user.js"
 import Vechicle from "../model/vechicle.js"
 import { isAdmin } from "./userController.js"
+import { syncToFirebase } from "../nextCollection.js"
 
 export async function addSchedule(req, res) {
     if (!isAdmin(req)) {
@@ -64,8 +65,11 @@ export async function addSchedule(req, res) {
 
         await schedule.save()
 
+        const warning = await syncToFirebase(scheduleNumber, false)
+
         res.status(201).json({
-            message: "Schedule Added Successfully !"
+            message: "Schedule Added Successfully !",
+            warning: warning
         })
 
 
@@ -180,8 +184,11 @@ export async function updateSchedule(req, res) {
             }
         )
 
+        const warning = await syncToFirebase(scheduleNumber, false)
+
         res.status(200).json({
-            message : "Schedule updatead Suessfully!"
+            message : "Schedule updatead Suessfully!",
+            warning : warning
         })
 
     }
@@ -192,7 +199,7 @@ export async function updateSchedule(req, res) {
     }
 }
 
-export function deleteSchedule(req,res){
+export async function deleteSchedule(req,res){
     if (!isAdmin(req)) {
         res.status(401).json({
             message: "Unautharized Acess"
@@ -200,23 +207,23 @@ export function deleteSchedule(req,res){
         return
     }
 
-    const scheduleNumber = req.params.scheduleNumber
+    try{
+        const scheduleNumber = req.params.scheduleNumber
 
-    Schedule.deleteOne({scheduleNumber : scheduleNumber}).then(
-        ()=>{
-            res.status(200).json({
-                message : "Schedule Deletead Successfuly!"
-            })
-        }
-    ).catch(
-        (err)=>{
-            res.status(400).json({
-                error : err.message
-            })
-        }
-    )
+        await Schedule.deleteOne({scheduleNumber : scheduleNumber})
 
+        const warning = await syncToFirebase(scheduleNumber, true)
 
+        res.status(200).json({
+            message : "Schedule Deletead Successfuly!",
+            warning : warning
+        })
+    }
+    catch(err){
+        res.status(400).json({
+            error : err.message
+        })
+    }
 }
 
 
