@@ -492,3 +492,44 @@ export async function createDriver(req,res){
         })
     }
 }
+
+export async function getDriverLocations(req,res){
+    if(!isAdmin(req)){
+        res.status(401).json({
+            message : "Unauthorized"
+        })
+        return
+    }
+
+    try{
+        const drivers = await User.find({
+            role : "driver",
+            "currentLocation.latitude" : {$ne : null}
+        }).select("firstName lastName status currentLocation locationUpdatedAt updatedAt")
+
+        const vechicles = await Vechicle.find({
+            assignedDriver : {$in : drivers.map((d)=>d._id)}
+        })
+
+        const result = drivers.map((driver)=>{
+            const truck = vechicles.find((v)=>String(v.assignedDriver) === String(driver._id))
+
+            return {
+                id : driver._id,
+                name : driver.firstName + " " + driver.lastName,
+                vehicleNo : truck ? truck.vechicleNumber : "-",
+                status : driver.status,
+                latitude : driver.currentLocation.latitude,
+                longitude : driver.currentLocation.longitude,
+                updatedAt : driver.locationUpdatedAt || driver.updatedAt
+            }
+        })
+
+        res.status(200).json(result)
+    }
+    catch(err){
+        res.status(500).json({
+            error : err.message
+        })
+    }
+}

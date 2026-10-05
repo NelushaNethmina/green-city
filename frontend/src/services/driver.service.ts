@@ -11,6 +11,16 @@ function errorMessage(err: any, fallback: string) {
   return err?.response?.data?.message || err?.response?.data?.error || err?.message || fallback;
 }
 
+export interface DriverLocation {
+  id: string;
+  name: string;
+  vehicleNo: string;
+  status: string;
+  latitude: number;
+  longitude: number;
+  updatedAt: string;
+}
+
 export const driverService = {
   getAll: async (): Promise<Driver[]> => {
     const users = await axios.get(url + "/users", config());
@@ -44,6 +54,11 @@ export const driverService = {
             : "-",
         };
       });
+  },
+
+  getLocations: async (): Promise<DriverLocation[]> => {
+    const res = await axios.get(url + "/users/driver-locations", config());
+    return res.data;
   },
 
   getById: async (id: string): Promise<Driver | undefined> => {

@@ -90,6 +90,11 @@ const userSchema = new mongoose.Schema(
             }
             
         },
+
+        locationUpdatedAt : {
+            type : Date,
+            default : null
+        },
     },
 
     {
