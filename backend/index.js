@@ -4,11 +4,8 @@ import cors from "cors"
 import jwt from "jsonwebtoken"
 import userRouter from "./routes/userRouter.js"
 import vechicleRouter from "./routes/vechicleRouter.js"
-import wasteReportRouter from "./routes/wasteReportRouter.js"
 import dailyWasteCollectionRouter from "./routes/dailyWasteCollectionRouter.js"
-import notificationRouter from "./routes/notificationRouter.js"
 import scheduleRouter from "./routes/scheduleRouter.js"
-import settingRouter from "./routes/settingRouter.js"
 import requestRouter from "./routes/requestRouter.js"
 
 
@@ -61,11 +58,8 @@ app.use(
 
 app.use("/users",userRouter)
 app.use("/vechicle", vechicleRouter)
-app.use("/wasteReport", wasteReportRouter)
 app.use("/dailyWasteCollection", dailyWasteCollectionRouter)
-app.use("/notification", notificationRouter)
 app.use("/schedule", scheduleRouter)
-app.use("/setting", settingRouter)
 app.use("/request", requestRouter)
 
 mongoose.connect(mongoURI).then(
