@@ -2,6 +2,7 @@ import express from "express"
 import mongoose from "mongoose"
 import cors from "cors"
 import jwt from "jsonwebtoken"
+import compression from "compression"
 import userRouter from "./routes/userRouter.js"
 import vechicleRouter from "./routes/vechicleRouter.js"
 import dailyWasteCollectionRouter from "./routes/dailyWasteCollectionRouter.js"
@@ -14,7 +15,15 @@ import settingRouter from  "./routes/settingRouter.js"
 const mongoURI = "mongodb+srv://admin:1234@cluster0.az5seek.mongodb.net/?appName=Cluster0"
 const app = express()
 app.use(cors())
+app.use(compression())
 app.use(express.json({ limit : "2mb" }))
+app.use((req,res,next)=>{
+    const start = Date.now()
+    res.on("finish", ()=>{
+        console.log(req.method + " " + req.originalUrl + " " + res.statusCode + " " + (Date.now() - start) + "ms")
+    })
+    next()
+})
 app.use((req,res,next)=>{
     const start = Date.now()
     res.on("finish", ()=>{

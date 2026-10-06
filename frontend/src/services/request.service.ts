@@ -1,4 +1,5 @@
 import axios from "axios";
+import { cachedGet } from "@/lib/apiCache";
 
 const url = "http://localhost:5000";
 
@@ -30,8 +31,8 @@ function toStatus(value: string): WasteRequest["status"] {
 
 export const requestService = {
   getAll: async (): Promise<WasteRequest[]> => {
-    const res = await axios.get(url + "/request", config());
-    return res.data.map((r: any): WasteRequest => ({
+    const data = await cachedGet(url + "/request");
+    return data.map((r: any): WasteRequest => ({
       id: r._id,
       residentUid: r.residentUid,
       residentName: r.residentName,

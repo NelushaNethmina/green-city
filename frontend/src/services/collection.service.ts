@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useGreenCityStore, BinLocation, WasteCategory, DailyCollection } from "@/store/greenCityStore";
+import { cachedGet } from "@/lib/apiCache";
 
 const url = "http://localhost:5000/dailyWasteCollection";
 
@@ -85,8 +86,8 @@ export const collectionService = {
   },
 
   getDailyCollections: async (): Promise<DailyCollection[]> => {
-    const res = await axios.get(url, config());
-    return res.data.map(toDailyCollection);
+    const data = await cachedGet(url);
+    return data.map(toDailyCollection);
   },
 
   createDailyCollection: async (collection: Omit<DailyCollection, "id">): Promise<void> => {

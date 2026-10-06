@@ -1,4 +1,5 @@
 import axios from "axios";
+import { cachedGet } from "@/lib/apiCache";
 
 const base = "http://localhost:5000";
 const url = base + "/vechicle";
@@ -22,12 +23,14 @@ function errorMessage(err: any, fallback: string) {
 }
 
 export const vehicleService = {
-  getAll: async (): Promise<Truck[]> => {
-    const vres = await axios.get(url, config());
-    const ures = await axios.get(base + "/users", config());
-    const drivers = ures.data.filter((u: any) => u.role === "driver");
+    getAll: async (): Promise<Truck[]> => {
+    const [vechicles, users] = await Promise.all([
+      cachedGet(url),
+      cachedGet(base + "/users?role=driver"),
+    ]);
+    const drivers = users.filter((u: any) => u.role === "driver");
 
-    return vres.data.map((v: any): Truck => {
+    return vechicles.map((v: any): Truck => {
       const assignedId = v.assignedDriver ? String(v.assignedDriver._id || v.assignedDriver) : null;
       const driver = assignedId ? drivers.find((u: any) => u._id === assignedId) : null;
       return {

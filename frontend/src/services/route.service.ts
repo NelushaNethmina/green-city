@@ -1,6 +1,7 @@
 import axios from "axios";
 import { RouteAssignment } from "@/store/greenCityStore";
 import { toast } from "sonner";
+import { cachedGet } from "@/lib/apiCache";
 
 const url = "http://localhost:5000";
 
@@ -37,19 +38,21 @@ function toRoute(s: any): RouteAssignment {
 }
 
 async function findDriverAndVechicle(driverId: string) {
-  const users = await axios.get(url + "/users", config());
-  const vechicles = await axios.get(url + "/vechicle", config());
-  const driver = users.data.find((u: any) => u._id === driverId);
-  const vechicle = vechicles.data.find(
+  const [users, vechicles] = await Promise.all([
+    cachedGet(url + "/users?role=driver"),
+    cachedGet(url + "/vechicle"),
+  ]);
+  const driver = users.find((u: any) => u._id === driverId);
+  const vechicle = vechicles.find(
     (v: any) => String(v.assignedDriver?._id || v.assignedDriver) === driverId
   );
   return { driver, vechicle };
 }
 
 export const routeService = {
-  getAll: async (): Promise<RouteAssignment[]> => {
-    const res = await axios.get(url + "/schedule", config());
-    return res.data.map(toRoute);
+    getAll: async (): Promise<RouteAssignment[]> => {
+    const data = await cachedGet(url + "/schedule");
+    return data.map(toRoute);
   },
 
    create: async (assignment: Omit<RouteAssignment, "id">): Promise<void> => {

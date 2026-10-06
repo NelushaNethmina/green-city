@@ -1,5 +1,6 @@
 import axios from "axios";
 import { Driver } from "@/store/greenCityStore";
+import { cachedGet } from "@/lib/apiCache";
 
 const url = "http://localhost:5000";
 
@@ -22,23 +23,17 @@ export interface DriverLocation {
 }
 
 export const driverService = {
-  getAll: async (): Promise<Driver[]> => {
-    const users = await axios.get(url + "/users", config());
-    const vechicles = await axios.get(url + "/vechicle", config());
-    let schedules: any[] = [];
-    try {
-      const sres = await axios.get(url + "/schedule", config());
-      schedules = sres.data;
-    } catch {}
+    getAll: async (): Promise<Driver[]> => {
+    const [users, vechicles] = await Promise.all([
+      cachedGet(url + "/users?role=driver"),
+      cachedGet(url + "/vechicle"),
+    ]);
 
-    return users.data
+    return users
       .filter((u: any) => u.role === "driver")
       .map((u: any): Driver => {
-        const v = vechicles.data.find(
+        const v = vechicles.find(
           (x: any) => String(x.assignedDriver?._id || x.assignedDriver) === u._id
-        );
-        const s = schedules.find(
-          (x: any) => String(x.driver?._id || x.driver) === u._id
         );
         return {
           id: u._id,
@@ -48,10 +43,6 @@ export const driverService = {
           vehicleNo: v ? v.vechicleNumber : "-",
           status: u.status === "active" ? "Online" : "Offline",
           currentWard: "-",
-          assignedRoute: s ? s.assignRoute : "-",
-          collectionDay: s
-            ? new Date(s.collectionDate).toLocaleDateString("en-US", { weekday: "long" })
-            : "-",
         };
       });
   },

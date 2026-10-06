@@ -1,7 +1,9 @@
 import axios from "axios";
 import { ResidentUser } from "@/store/greenCityStore";
+import { cachedGet } from "@/lib/apiCache";
 
 const url = "http://localhost:5000/users";
+
 
 function config() {
   return { headers: { Authorization: "Bearer " + localStorage.getItem("token") } };
@@ -24,9 +26,9 @@ function toResident(u: any): ResidentUser {
 }
 
 export const residentService = {
-  getAll: async (): Promise<ResidentUser[]> => {
-    const res = await axios.get(url, config());
-    return res.data.filter((u: any) => u.role === "resident").map(toResident);
+    getAll: async (): Promise<ResidentUser[]> => {
+    const data = await cachedGet(url + "?role=resident");
+    return data.filter((u: any) => u.role === "resident").map(toResident);
   },
 
   getById: async (id: string): Promise<ResidentUser | undefined> => {

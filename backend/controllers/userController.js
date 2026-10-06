@@ -10,14 +10,26 @@ import Vechicle from "../model/vechicle.js"
 export function getUser(req,res){
     if(req.user == null || req.user.role != "admin"){
         res.status(401).json({
-            message : "Unauthorized Acess",
-            token : req.user
+            message : "Unauthorized Acess"
         })
         return
     }
-    User.find().then(
+
+    const filter = {}
+
+    if(req.query.role){
+        filter.role = req.query.role
+    }
+
+    User.find(filter).select("-password -image").then(
         (users)=>{
             res.json(users)
+        }
+    ).catch(
+        (err)=>{
+            res.status(500).json({
+                error : err.message
+            })
         }
     )
 }
