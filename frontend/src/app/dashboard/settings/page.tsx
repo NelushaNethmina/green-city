@@ -41,14 +41,12 @@ function SettingsContent() {
   const [selectedAdmin, setSelectedAdmin] = useState<{ id: string; name: string; email: string; role: string } | null>(null);
   const currentUser = useAuthStore((state) => state.user);
   
-  // Password Visibility toggles for registration form
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const searchParams = useSearchParams();
 
-  // Forms setup
   const profileForm = useForm<ProfileFormData>({
     mode: "onChange"
   });
@@ -71,10 +69,8 @@ function SettingsContent() {
       setSettings(sData);
       setAdmins(aData);
       
-      // Seed default form states
       systemForm.reset(sData);
 
-      // Load profile info from localStorage
       if (typeof window !== "undefined") {
         const userStr = localStorage.getItem("user_profile");
         if (userStr) {
@@ -99,7 +95,6 @@ function SettingsContent() {
     loadData();
   }, []);
 
-  // Smooth scroll and highlight focus logic
   useEffect(() => {
     if (searchParams && searchParams.get("focus") === "profile") {
       const element = document.getElementById("profile-settings");
@@ -117,13 +112,11 @@ function SettingsContent() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check size limit: 1MB
     if (file.size > 1024 * 1024) {
       toast.error("Profile picture size must be less than 1MB.");
       return;
     }
 
-    // Check file format
     const allowedFormats = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
     if (!allowedFormats.includes(file.type)) {
       toast.error("Format not supported. Use PNG, JPG, JPEG or WEBP.");
@@ -219,12 +212,10 @@ function SettingsContent() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full pb-8">
       
-      {/* Title */}
       <div className="lg:col-span-12">
         <h2 className="text-2xl font-extrabold text-foreground">Settings Panel</h2>
       </div>
 
-      {/* 1. Profile Config Card (7 cols) */}
       <Card
         id="profile-settings"
         className={cn(
@@ -242,7 +233,6 @@ function SettingsContent() {
         <CardContent>
           <form onSubmit={profileForm.handleSubmit(onUpdateProfile)} className="space-y-6">
             
-            {/* Pic preview & Device Upload */}
             <div className="flex flex-col items-center gap-3 mb-6">
               <div 
                 onClick={() => fileInputRef.current?.click()}
@@ -279,7 +269,6 @@ function SettingsContent() {
               <span className="text-[10px] font-bold text-muted-text uppercase">PNG, JPG, JPEG, WEBP (Max 1MB)</span>
             </div>
 
-            {/* Input grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <Input
                 label="Full Name *"
@@ -329,7 +318,6 @@ function SettingsContent() {
 
       
 
-      {/* 3. Administrators CRUD (12 cols - Bottom Row) */}
       <Card className="lg:col-span-12 border border-card-border">
         <CardHeader>
           <CardTitle className="text-sm font-extrabold uppercase tracking-wider flex items-center gap-2">
@@ -340,7 +328,6 @@ function SettingsContent() {
         </CardHeader>
         <CardContent className="space-y-8">
           
-          {/* Add admin inline */}
           <div className="border-b border-card-border pb-6">
             <h4 className="text-[13px] font-bold uppercase tracking-wider text-muted-text mb-4">Add New Administrator</h4>
             <form onSubmit={adminForm.handleSubmit(onAddAdmin)} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 items-start">
@@ -373,7 +360,6 @@ function SettingsContent() {
                 {...adminForm.register("role", { required: "Security role is required." })}
               />
 
-              {/* Password */}
               <div className="relative flex flex-col gap-1.5 w-full">
                 <Input
                   label="Password *"
@@ -405,7 +391,6 @@ function SettingsContent() {
                 </span>
               </div>
 
-              {/* Confirm Password */}
               <div className="relative flex flex-col gap-1.5 w-full">
                 <Input
                   label="Confirm Password *"
@@ -426,7 +411,6 @@ function SettingsContent() {
                 </button>
               </div>
 
-              {/* Button row */}
               <div className="col-span-1 md:col-span-2 lg:col-span-3 flex justify-end pt-2">
                 <Button variant="primary" size="md" type="submit" className="w-full sm:w-auto h-[46px] cursor-pointer">
                   <Plus className="h-4.5 w-4.5 mr-1.5" />
@@ -436,7 +420,6 @@ function SettingsContent() {
             </form>
           </div>
 
-          {/* List of admins in a clean table */}
           <div>
             <h4 className="text-[13px] font-bold uppercase tracking-wider text-muted-text mb-4">Registered Administrators</h4>
             <div className="overflow-x-auto rounded-2xl border border-card-border bg-card-bg/25 backdrop-blur-md">
@@ -491,7 +474,6 @@ function SettingsContent() {
         </CardContent>
       </Card>
 
-      {/* Confirm Dialog: Delete Admin */}
       <ConfirmDialog
         isOpen={isDeleteOpen}
         onClose={() => {

@@ -19,7 +19,6 @@ import { Select } from "@/components/ui/Select";
 import { Skeleton } from "@/components/ui/Skeleton";
 
 
-// Dynamic load of single resident map
 const ResidentLocationMap = dynamic(
   () => import("@/components/dashboard/ResidentLocationMap"),
   {
@@ -44,17 +43,14 @@ export default function ResidentsPage() {
   const [bins, setBins] = useState<BinLocation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Modals state
   const [isOpen, setIsOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isLocationOpen, setIsLocationOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
-  // Focus Context states
   const [editingResident, setEditingResident] = useState<ResidentUser | null>(null);
   const [selectedResident, setSelectedResident] = useState<ResidentUser | null>(null);
 
-  // Filters state
   const [wardFilter, setWardFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
 
@@ -183,7 +179,6 @@ export default function ResidentsPage() {
     reportService.exportToCSV(headers, rows, "GreenCity_Residents_Report");
   };
 
-  // Filtered residents list
   const filteredResidents = useMemo(() => {
     return residents.filter((r) => {
       const wardMatch = wardFilter === "All" || r.ward === wardFilter;
@@ -192,7 +187,6 @@ export default function ResidentsPage() {
     });
   }, [residents, wardFilter, statusFilter]);
 
-  // Selected resident's completed collection history
   const residentHistory = useMemo(() => {
     if (!selectedResident) return [];
     return bins.filter((b) => b.reporterName.toLowerCase() === selectedResident.name.toLowerCase());
@@ -228,7 +222,6 @@ export default function ResidentsPage() {
       header: "Actions",
       render: (item) => (
         <div className="flex items-center gap-2">
-          {/* Map Location */}
           <Button
             variant="ghost"
             size="sm"
@@ -242,7 +235,6 @@ export default function ResidentsPage() {
             <MapPin className="h-3.5 w-3.5" />
           </Button>
 
-          {/* History */}
           <Button
             variant="ghost"
             size="sm"
@@ -256,7 +248,6 @@ export default function ResidentsPage() {
             <History className="h-3.5 w-3.5" />
           </Button>
 
-          {/* Block/Unblock toggle */}
           <Button
             variant="ghost"
             size="sm"
@@ -273,7 +264,6 @@ export default function ResidentsPage() {
             )}
           </Button>
 
-          {/* Edit details */}
           <Button
             variant="ghost"
             size="sm"
@@ -284,7 +274,6 @@ export default function ResidentsPage() {
             <Edit3 className="h-3.5 w-3.5" />
           </Button>
 
-          {/* Delete resident */}
           <Button
             variant="ghost"
             size="sm"
@@ -304,7 +293,6 @@ export default function ResidentsPage() {
 
   return (
     <div className="flex flex-col gap-6 w-full">
-      {/* Header bar */}
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-xl font-extrabold text-foreground">Resident Directory</h2>
@@ -323,7 +311,6 @@ export default function ResidentsPage() {
 
       
 
-      {/* Main directory table */}
       <div className="bg-card-bg border border-card-border rounded-3xl p-5 shadow-sm">
         {isLoading ? (
           <div className="py-20 flex justify-center items-center gap-2 text-xs font-bold text-muted-text">
@@ -343,7 +330,6 @@ export default function ResidentsPage() {
         )}
       </div>
 
-      {/* Modal Dialog: Add/Edit Resident */}
       <Modal
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
@@ -420,7 +406,6 @@ export default function ResidentsPage() {
         </form>
       </Modal>
 
-      {/* Modal Dialog: View Location Map */}
       <Modal
         isOpen={isLocationOpen}
         onClose={() => {
@@ -454,7 +439,6 @@ export default function ResidentsPage() {
 
       
 
-      {/* Confirm Dialog: Delete Resident */}
       <ConfirmDialog
         isOpen={isDeleteOpen}
         onClose={() => setIsDeleteOpen(false)}

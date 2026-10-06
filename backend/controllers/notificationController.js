@@ -29,7 +29,7 @@ export async function addNotification(req,res){
         const notification = new Notification({
                 ...req.body,
                 notificationNumber,
-                sentBy : req.user._id //req.user.email
+                sentBy : req.user._id
             })
 
             await notification.save()

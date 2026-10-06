@@ -1,5 +1,4 @@
 "use client";
-//test3 test3
 import React, { useState, useEffect, useMemo } from "react";
 import { BarChart3, TrendingUp, Calendar, AlertCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -45,7 +44,6 @@ export default function AnalyticsPage() {
 
   const COLORS = ["#0F5C3B", "#3B82F6", "#F59E0B", "#EF4444", "#8BC34A"];
 
-  // Prepare export data
   const reportHeaders = ["Analytics Item", "Metric Value"];
   const reportRows = useMemo(() => {
     if (!summary) return [];
@@ -59,7 +57,6 @@ export default function AnalyticsPage() {
 
   return (
     <div className="flex flex-col gap-6 w-full pb-8">
-      {/* Header bar */}
       <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
         <div>
           <h2 className="text-xl font-extrabold text-foreground">Analytics Engine</h2>
@@ -76,7 +73,6 @@ export default function AnalyticsPage() {
         </div>
       </div>
 
-      {/* Timeframe Switcher Tabs */}
       <div className="flex gap-2 p-1 border border-card-border rounded-2xl bg-card-bg/10 max-w-sm">
         {(["daily", "weekly", "monthly", "yearly"] as const).map((t) => (
           <Button
@@ -98,7 +94,6 @@ export default function AnalyticsPage() {
         </div>
       ) : (
         <>
-          {/* Metrics summary widget bar */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card>
               <CardContent className="pt-5">
@@ -126,10 +121,8 @@ export default function AnalyticsPage() {
             </Card>
           </div>
 
-          {/* Charts grid */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
 
-            {/* Area Chart: Monthly Collections */}
             <Card className="lg:col-span-8">
               <CardHeader>
                 <CardTitle className="text-sm font-extrabold uppercase tracking-wider">Weight Trends</CardTitle>
@@ -165,7 +158,6 @@ export default function AnalyticsPage() {
               </CardContent>
             </Card>
 
-            {/* Donut Chart: Category share */}
             <Card className="lg:col-span-4">
               <CardHeader>
                 <CardTitle className="text-sm font-extrabold uppercase tracking-wider">Category Share</CardTitle>

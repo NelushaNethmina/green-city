@@ -5,7 +5,6 @@ import { ArrowRight, Download, Leaf, ShieldCheck, MapPin } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 
-// Custom CountUp hook for stats
 function CountUp({ end, suffix = "", duration = 2000 }: { end: number; suffix?: string; duration?: number }) {
   const [count, setCount] = useState(0);
 
@@ -43,7 +42,6 @@ export function Hero() {
       id="home"
       className="relative min-h-screen flex items-center justify-center pt-24 pb-16 px-4 sm:px-6 lg:px-8 overflow-hidden bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-green-500/10 via-background to-background"
     >
-      {/* Desktop Background Illustration */}
 <div className="hidden lg:block absolute inset-0 -z-10 pointer-events-none">
   <div className="mx-auto max-w-7xl h-full w-full relative">
     <div
@@ -60,11 +58,9 @@ export function Hero() {
   </div>
 </div>
 
-      {/* Background Blobs */}
       <div className="absolute top-1/4 left-1/10 w-72 h-72 bg-primary-green/5 dark:bg-primary-green/10 rounded-full blur-3xl animate-pulse-soft -z-10" />
       <div className="absolute bottom-1/4 right-1/10 w-96 h-96 bg-accent-green/5 dark:bg-accent-green/10 rounded-full blur-3xl animate-pulse-soft -z-10" />
 
-      {/* Floating Leaves Animation */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden -z-10">
         <motion.div
           animate={{
@@ -91,31 +87,26 @@ export function Hero() {
       </div>
 
       <div className="mx-auto max-w-7xl w-full grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-center">
-        {/* Left Side: Headline & Copy */}
         <motion.div
           initial={{ opacity: 0, x: -30 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="flex flex-col gap-6 text-center lg:text-left"
         >
-          {/* Badge */}
           <div className="mx-auto lg:mx-0 inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary-green/10 bg-primary-green/5 text-primary-green dark:text-accent-green text-xs font-bold uppercase tracking-wider">
             <ShieldCheck className="h-4 w-4" />
             Badulla Smart Municipal Initiative
           </div>
 
-          {/* Heading */}
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight text-foreground tracking-tight">
             Transforming Waste Collection Into A{" "}
             <span className="text-gradient-green">Smarter Future</span>
           </h1>
 
-          {/* Subtitle */}
           <p className="text-base sm:text-lg text-muted-text max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium">
             Empowering citizens and drivers with automated route scheduling, live GPS waste bins tagging, and real-time municipal notifications for the Badulla Municipal Council.
           </p>
 
-          {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mt-2">
             <Button
               onClick={() => handleScrollTo("getting-started")}
@@ -137,7 +128,6 @@ export function Hero() {
             </Button>
           </div>
 
-          {/* Mini Stat Badges */}
           <div className="grid grid-cols-3 gap-4 border-t border-card-border/80 pt-8 mt-4 max-w-md mx-auto lg:mx-0">
             <div className="flex flex-col gap-1 items-center lg:items-start">
               <span className="text-2xl sm:text-3xl font-extrabold text-primary-green dark:text-accent-green">
@@ -166,11 +156,9 @@ export function Hero() {
           </div>
         </motion.div>
 
-        {/* Right Side: Empty Placeholder to align Left Side on desktop grid */}
         <div className="hidden lg:block w-full h-full pointer-events-none" />
       </div>
 
-      {/* Scroll indicator */}
       <div className="hidden lg:flex absolute bottom-8 left-1/2 -translate-x-1/2 flex-col items-center gap-2 cursor-pointer" onClick={() => handleScrollTo("problems")}>
         <span className="text-[10px] font-bold uppercase tracking-wider text-muted-text">
           Scroll Down

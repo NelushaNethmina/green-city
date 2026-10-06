@@ -13,10 +13,8 @@ import { Footer } from "@/components/landing/Footer";
 export default function Home() {
   return (
     <div className="relative min-h-screen flex flex-col w-full">
-      {/* Sticky Floating Header */}
       <Navbar />
 
-      {/* Main Page Layout Sections */}
       <main className="flex-1 w-full flex flex-col">
         <Hero />
         <Problems />
@@ -29,7 +27,6 @@ export default function Home() {
         <Contact />
       </main>
 
-      {/* Page Footer */}
       <Footer />
     </div>
   );

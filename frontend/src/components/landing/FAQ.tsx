@@ -41,8 +41,6 @@ export function FAQ() {
   return (
     <section id="faq" className="py-24 bg-[#FFFFFF] relative overflow-hidden">
       <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-        
-        {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 flex flex-col gap-3">
           <span className="text-xs font-bold uppercase tracking-wider text-primary-green dark:text-accent-green">
             Got Questions?
@@ -55,7 +53,6 @@ export function FAQ() {
           </p>
         </div>
 
-        {/* Accordion List */}
         <div className="space-y-4">
           {faqs.map((faq, idx) => {
             const isOpen = openIdx === idx;

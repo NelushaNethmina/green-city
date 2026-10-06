@@ -49,7 +49,6 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { requestService, WasteRequest } from "@/services/request.service";
 
-// Safe Dynamic Import of Map
 const LiveTrackingMap = dynamic(
   () => import("@/components/dashboard/LiveTrackingMap"),
   {
@@ -65,7 +64,6 @@ const LiveTrackingMap = dynamic(
   }
 );
 
-// Form Interfaces for Quick Actions
 interface QuickDriverForm {
   email: string;
   password: string;
@@ -178,16 +176,13 @@ export default function OverviewPage() {
     loadAll();
   }, []);
 
-  // Modals state for Quick Actions
   const [modalType, setModalType] = useState<"driver" | "waste" | "route" | "notification" | null>(null);
 
-  // Forms setup
   const driverForm = useForm<QuickDriverForm>({ defaultValues: { status: "Online", currentWard: "Badulla Ward 03" } });
   const wasteForm = useForm<QuickWasteForm>({ defaultValues: { date: new Date().toISOString().split('T')[0], category: "Food Waste" } });
   const routeForm = useForm<QuickRouteForm>({ defaultValues: { date: new Date().toISOString().split('T')[0], category: "Food Waste" } });
   const ntfForm = useForm<QuickNotificationForm>({ defaultValues: { recipientType: "All", type: "Broadcast" } });
 
-  // Metrics calculation
   const metrics = useMemo(() => {
     const todayStr = new Date().toISOString().split('T')[0];
     const todayCols = dailyCollections.filter((c) => c.date === todayStr);
@@ -208,13 +203,11 @@ export default function OverviewPage() {
     };
   }, [requests, residents, drivers, dailyCollections]);
 
-  // Today's schedule assignments list
   const todaysSchedule = useMemo(() => {
     const todayStr = new Date().toISOString().split('T')[0];
     return routes.filter((r) => r.date === todayStr);
   }, [routes]);
 
-  // Quick Action Submissions
   const onAddDriver = async (data: QuickDriverForm) => {
     try {
       await driverService.create({
@@ -292,7 +285,6 @@ export default function OverviewPage() {
     ntfForm.reset();
   };
 
-  // Recharts Seed Aggregates derived from live dailyCollections
   const trendData = useMemo(() => {
     const last7Days = Array.from({ length: 7 }).map((_, i) => {
       const d = new Date();
@@ -331,7 +323,6 @@ export default function OverviewPage() {
 
   return (
     <div className="flex flex-col gap-6 w-full pb-8">
-      {/* 1. Large Map at the absolute top */}
       <div className="w-full">
         <div className="flex justify-between items-center mb-3">
           <div>
@@ -349,9 +340,7 @@ export default function OverviewPage() {
         </div>
       </div>
 
-      {/* 2. Metrics Cards below the map */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        {/* Card 1 */}
         <Card>
           <CardContent className="pt-5 flex flex-col gap-1 justify-center min-h-[115px]">
             <span className="text-[12px] font-bold text-muted-text uppercase tracking-wider block">Today's Collections</span>
@@ -362,7 +351,6 @@ export default function OverviewPage() {
           </CardContent>
         </Card>
 
-        {/* Card 2 */}
         <Card>
           <CardContent className="pt-5 flex flex-col gap-1 justify-center min-h-[115px]">
             <span className="text-[12px] font-bold text-muted-text uppercase tracking-wider block">Pending Collections</span>
@@ -373,7 +361,6 @@ export default function OverviewPage() {
           </CardContent>
         </Card>
 
-        {/* Card 3 */}
         <Card>
           <CardContent className="pt-5 flex flex-col gap-1 justify-center min-h-[115px]">
             <span className="text-[12px] font-bold text-muted-text uppercase tracking-wider block">Completed Collections</span>
@@ -384,7 +371,6 @@ export default function OverviewPage() {
           </CardContent>
         </Card>
 
-        {/* Card 4 */}
         <Card>
           <CardContent className="pt-5 flex flex-col gap-1 justify-center min-h-[115px]">
             <span className="text-[12px] font-bold text-muted-text uppercase tracking-wider block">Registered Residents</span>
@@ -393,7 +379,6 @@ export default function OverviewPage() {
           </CardContent>
         </Card>
 
-        {/* Card 5 */}
         <Card>
           <CardContent className="pt-5 flex flex-col gap-1 justify-center min-h-[115px]">
             <span className="text-[12px] font-bold text-muted-text uppercase tracking-wider block">Registered Drivers</span>
@@ -403,10 +388,8 @@ export default function OverviewPage() {
         </Card>
       </div>
 
-      {/* 3. Quick Actions & Today's Schedule Row */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-        {/* Quick Actions Panel */}
         <Card className="lg:col-span-6">
           <CardHeader className="pb-3">
             <CardTitle className="text-[15.5px] font-extrabold uppercase tracking-wider flex items-center gap-2">
@@ -454,7 +437,6 @@ export default function OverviewPage() {
           </CardContent>
         </Card>
 
-        {/* Today's Schedule Panel */}
         <Card className="lg:col-span-6 flex flex-col justify-between">
           <CardHeader className="pb-2">
             <CardTitle className="text-[15.5px] font-extrabold uppercase tracking-wider flex items-center gap-2">
@@ -503,10 +485,8 @@ export default function OverviewPage() {
         </Card>
       </div>
 
-      {/* 4. Analytics Trend charts row */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-        {/* Collection Trend Charts */}
         <Card className="lg:col-span-7 flex flex-col justify-between">
           <CardHeader className="p-8 pb-4">
             <CardTitle className="text-[15.5px] font-extrabold uppercase tracking-wider">
@@ -541,7 +521,6 @@ export default function OverviewPage() {
           </CardContent>
         </Card>
 
-        {/* Waste Shares Pie Chart */}
         <Card className="lg:col-span-5 flex flex-col justify-between">
           <CardHeader className="p-8 pb-4">
             <CardTitle className="text-[15.5px] font-extrabold uppercase tracking-wider">
@@ -600,7 +579,6 @@ export default function OverviewPage() {
 
       </div>
 
-      {/* MODAL 1: ADD DRIVER */}
       <Modal isOpen={modalType === "driver"} onClose={() => setModalType(null)} title="Quick Add Driver Profile" className="max-w-md">
         <form onSubmit={driverForm.handleSubmit(onAddDriver)} className="space-y-4">
           <Input label="Driver Full Name *" placeholder="Jagath Bandara" {...driverForm.register("name", { required: true })} />
@@ -632,7 +610,6 @@ export default function OverviewPage() {
         </form>
       </Modal>
 
-      {/* MODAL 2: ADD WASTE RECORD */}
       <Modal isOpen={modalType === "waste"} onClose={() => setModalType(null)} title="Quick Log Daily Collection" className="max-w-md">
         <form onSubmit={wasteForm.handleSubmit(onAddWaste)} className="space-y-4">
           <Input type="date" label="Collection Date *" {...wasteForm.register("date", { required: true })} />
@@ -649,7 +626,6 @@ export default function OverviewPage() {
         </form>
       </Modal>
 
-      {/* MODAL 3: ASSIGN ROUTE */}
       <Modal isOpen={modalType === "route"} onClose={() => setModalType(null)} title="Quick Assign Route Log" className="max-w-md">
         <form onSubmit={routeForm.handleSubmit(onAssignRoute)} className="space-y-4">
           <Select
@@ -671,7 +647,6 @@ export default function OverviewPage() {
         </form>
       </Modal>
 
-      {/* MODAL 4: SEND send   BROADCAST */}
       <Modal isOpen={modalType === "notification"} onClose={() => setModalType(null)} title="Quick Send System Notification" className="max-w-md">
         <form onSubmit={ntfForm.handleSubmit(onSendNotification)} className="space-y-4">
           <Select

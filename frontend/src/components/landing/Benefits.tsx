@@ -72,9 +72,9 @@ function AnimatedMetric({ value, inView }: { value: string; inView: boolean }) {
       hasAnimated.current = true;
       const match = value.match(/^([+-]?)([\d.]+)(.*)$/);
       if (match) {
-        const prefix = match[1]; // "+" or "-" or ""
+        const prefix = match[1];
         const targetNum = parseFloat(match[2]);
-        const suffix = match[3]; // "%", "t", "h", etc.
+        const suffix = match[3];
 
         const controls = animate(0, targetNum, {
           duration: 1.8,
@@ -102,8 +102,6 @@ export function Benefits() {
   return (
     <section ref={sectionRef} id="benefits" className="py-24 bg-[#FFFFFF] relative overflow-hidden">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        
-        {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 flex flex-col gap-3">
           <span className="text-xs font-bold uppercase tracking-wider text-primary-green dark:text-accent-green">
             Environmental Impact
@@ -116,7 +114,6 @@ export function Benefits() {
           </p>
         </div>
 
-        {/* Benefits Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {benefits.map((ben, idx) => (
             <motion.div
@@ -127,7 +124,6 @@ export function Benefits() {
             >
               <Card className="group h-full border border-card-border bg-card-bg/25 flex flex-col justify-between hover:-translate-y-1.5 hover:shadow-xl hover:shadow-primary-green/5 hover:border-primary-green/20 transition-all duration-300">
                 <CardContent className="pt-6 flex flex-col gap-4">
-                  {/* Icon & Title */}
                   <div className="flex items-center justify-between">
                     <div className="p-2.5 bg-primary-green/5 dark:bg-accent-green/10 border border-primary-green/10 rounded-2xl w-fit group-hover:rotate-6 group-hover:scale-105 transition-all duration-300">
                       {ben.icon}
@@ -144,7 +140,6 @@ export function Benefits() {
                   </div>
                 </CardContent>
 
-                {/* Progress bar footer */}
                 <div className="px-6 pb-6 mt-auto">
                   <div className="h-1.5 w-full bg-muted-bg dark:bg-[#13221a] rounded-full overflow-hidden border border-card-border/30">
                     <motion.div

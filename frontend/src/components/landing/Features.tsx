@@ -49,7 +49,6 @@ export function Features() {
   return (
     <section id="features" className="py-24 bg-background relative">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 flex flex-col gap-3">
           <span className="text-xs font-bold uppercase tracking-wider text-primary-green dark:text-accent-green">
             System Capabilities
@@ -62,7 +61,6 @@ export function Features() {
           </p>
         </div>
 
-        {/* Features Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feat, i) => (
             <motion.div

@@ -42,7 +42,6 @@ export function HowItWorks() {
   return (
     <section id="how-it-works" className="py-24 bg-[#FFFFFF] relative overflow-hidden">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 flex flex-col gap-3">
           <span className="text-xs font-bold uppercase tracking-wider text-primary-green dark:text-accent-green">
             Citizen Journey
@@ -55,13 +54,11 @@ export function HowItWorks() {
           </p>
         </div>
 
-        {/* Timeline Horizontal / Vertical */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-stretch relative">
           {steps.map((step, idx) => {
             const isLast = idx === steps.length - 1;
             return (
               <div key={idx} className="flex flex-col lg:flex-row items-center gap-4 relative h-full">
-                {/* Step Card */}
                 <motion.div
                   initial={{ opacity: 0, y: 15 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -70,7 +67,6 @@ export function HowItWorks() {
                   className="w-full h-full"
                 >
                   <Card className="h-full border border-card-border bg-card-bg/25 flex flex-col relative overflow-hidden">
-                    {/* Corner Step Number */}
                     <div className="absolute top-2 right-4 text-3xl font-black text-primary-green/5 dark:text-accent-green/5 select-none">
                       {step.num}
                     </div>
@@ -91,7 +87,6 @@ export function HowItWorks() {
                   </Card>
                 </motion.div>
 
-                {/* Arrow Connector (Hidden on Mobile/Tablet, visible on large desktop between cards) */}
                 {!isLast && (
                   <div className="hidden lg:flex items-center justify-center text-primary-green/20 dark:text-accent-green/20 animate-pulse-soft">
                     <ArrowRight className="h-5 w-5 stroke-[3px]" />

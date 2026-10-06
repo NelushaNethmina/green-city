@@ -43,17 +43,14 @@ export default function CollectionsPage() {
   const [dailyCollections, setDailyCollections] = useState<DailyCollection[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Category Manager State
   const [newCategoryName, setNewCategoryName] = useState("");
   const [editingCatId, setEditingCatId] = useState<string | null>(null);
   const [editingCatName, setEditingCatName] = useState("");
 
-  // Modals state
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
-  // Selection states
   const [selectedRecord, setSelectedRecord] = useState<DailyCollection | null>(null);
 
   const {
@@ -71,7 +68,6 @@ export default function CollectionsPage() {
     },
   });
 
-  // Fetch / Sync Category and Collection Lists
   const loadCategories = async () => {
     try {
       const cData = await collectionService.getCategories();
@@ -100,7 +96,6 @@ export default function CollectionsPage() {
     init();
   }, [store.categories]);
 
-  // Utility Date Formatter (e.g. "16 Jul 2026")
   const formatDate = (dateStr: string) => {
     if (!dateStr) return "-";
     const d = new Date(dateStr);
@@ -111,7 +106,6 @@ export default function CollectionsPage() {
     });
   };
 
-  // Utility Time Formatter (e.g. "5:15 PM")
   const formatTime = (isoStr: string) => {
     if (!isoStr) return "-";
     const d = new Date(isoStr);
@@ -122,7 +116,6 @@ export default function CollectionsPage() {
     });
   };
 
-  // Calculations for Summary Cards (Updated Automatically)
   const stats = useMemo(() => {
     const todayStr = new Date().toISOString().split("T")[0];
     const currentMonthNum = new Date().getMonth();
@@ -139,22 +132,18 @@ export default function CollectionsPage() {
       totalWeightAllTime += cWeight;
       uniqueDays.add(c.date);
 
-      // Today's Collection
       if (c.date === todayStr) {
         todayTotal += cWeight;
       }
 
-      // This Month's Collection
       const cDateObj = new Date(c.date);
       if (cDateObj.getMonth() === currentMonthNum && cDateObj.getFullYear() === currentYearNum) {
         thisMonthTotal += cWeight;
       }
 
-      // Category Summing
       catTotals[c.category] = (catTotals[c.category] || 0) + cWeight;
     });
 
-    // Most Collected Category
     let mostCollected = "None";
     let maxWeight = 0;
     Object.entries(catTotals).forEach(([cat, weight]) => {
@@ -164,7 +153,6 @@ export default function CollectionsPage() {
       }
     });
 
-    // Average Daily Collection
     const avgDaily = uniqueDays.size > 0 ? totalWeightAllTime / uniqueDays.size : 0;
 
     return {
@@ -175,7 +163,6 @@ export default function CollectionsPage() {
     };
   }, [dailyCollections]);
 
-  // Handle Add Form Submission
   const handleAddCollection = async (data: CollectionFormData) => {
     const qty = parseFloat(data.weightKg);
     if (isNaN(qty) || qty < 0) {
@@ -208,7 +195,6 @@ export default function CollectionsPage() {
     }
   };
 
-  // Open Edit Modal
   const openEditModal = (record: DailyCollection) => {
     setSelectedRecord(record);
     setValue("date", record.date);
@@ -218,7 +204,6 @@ export default function CollectionsPage() {
     setIsEditOpen(true);
   };
 
-  // Handle Edit Submission
   const handleEditCollection = async (data: CollectionFormData) => {
     if (!selectedRecord) return;
 
@@ -244,7 +229,6 @@ export default function CollectionsPage() {
     }
   };
 
-  // Handle Delete Confirmation
   const handleDeleteConfirm = async () => {
     if (!selectedRecord) return;
     try {
@@ -257,7 +241,6 @@ export default function CollectionsPage() {
     }
   };
 
-  // Waste Category Actions
   const handleAddCategory = async () => {
     const trimmed = newCategoryName.trim();
     if (!trimmed) {
@@ -311,7 +294,6 @@ export default function CollectionsPage() {
       return;
     }
 
-    // Check if category is used in dailyCollections
     const isUsed = dailyCollections.some(
       (col) => col.category.toLowerCase() === cat.name.toLowerCase()
     );
@@ -329,12 +311,11 @@ export default function CollectionsPage() {
     }
   };
 
-  // Dynamic Data preparation for Table (attaching month/year strings for built-in Table filters)
   const tableData = useMemo(() => {
     return dailyCollections.map((c) => {
       const dObj = new Date(c.date);
-      const mVal = String(dObj.getMonth() + 1); // "1" - "12"
-      const yVal = String(dObj.getFullYear()); // "2026"
+      const mVal = String(dObj.getMonth() + 1);
+      const yVal = String(dObj.getFullYear());
       return {
         ...c,
         month: mVal,
@@ -343,7 +324,6 @@ export default function CollectionsPage() {
     });
   }, [dailyCollections]);
 
-  // Dropdown list options
   const monthFilterOptions = [
     { value: "1", label: "January" },
     { value: "2", label: "February" },
@@ -364,7 +344,6 @@ export default function CollectionsPage() {
     dailyCollections.forEach((c) => {
       years.add(c.date.split("-")[0]);
     });
-    // Ensure current year is always an option
     years.add(String(new Date().getFullYear()));
     return Array.from(years)
       .sort((a, b) => b.localeCompare(a))
@@ -375,14 +354,12 @@ export default function CollectionsPage() {
     return categories.map((c) => ({ value: c.name, label: c.name }));
   }, [categories]);
 
-  // Built-in table filters definition
   const tableFilters: TableFilter[] = [
     { key: "category", label: "Category", options: categoryFilterOptions },
     { key: "month", label: "Month", options: monthFilterOptions },
     { key: "year", label: "Year", options: yearFilterOptions },
   ];
 
-  // CSV / PDF exports content structure
   const reportHeaders = [
     "Collection Date",
     "Waste Category",
@@ -394,7 +371,6 @@ export default function CollectionsPage() {
   ];
 
   const reportRows = useMemo(() => {
-    // Generate clean list of exported rows
     const rows = tableData.map((c) => [
       formatDate(c.date),
       c.category,
@@ -407,10 +383,8 @@ export default function CollectionsPage() {
 
     if (tableData.length === 0) return rows;
 
-    // Calculate totals
     const grandTotalKg = tableData.reduce((sum, c) => sum + c.weightKg, 0);
 
-    // Group by month
     const monthlySummary: Record<string, number> = {};
     tableData.forEach((c) => {
       const monthYearStr = new Date(c.date).toLocaleDateString("en-US", {
@@ -420,7 +394,6 @@ export default function CollectionsPage() {
       monthlySummary[monthYearStr] = (monthlySummary[monthYearStr] || 0) + c.weightKg;
     });
 
-    // Append beautiful summaries to CSV payload
     rows.push(["", "", "", "", "", "", ""]);
     rows.push(["GRAND TOTAL", "", `${grandTotalKg.toLocaleString()} Kg`, "", "", "", ""]);
     rows.push(["", "", "", "", "", "", ""]);
@@ -432,7 +405,6 @@ export default function CollectionsPage() {
     return rows;
   }, [tableData]);
 
-  // Columns definition for Desktop
   const columns: Column<any>[] = [
     {
       key: "date",
@@ -516,7 +488,6 @@ export default function CollectionsPage() {
 
   return (
     <div className="flex flex-col gap-6 w-full pb-10">
-      {/* Header bar */}
       <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
         <div>
           <h2 className="text-xl font-extrabold text-foreground">Daily Waste Collection Register</h2>
@@ -548,7 +519,6 @@ export default function CollectionsPage() {
         </div>
       </div>
 
-      {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardContent className="pt-5 flex items-center justify-between">
@@ -598,7 +568,6 @@ export default function CollectionsPage() {
         </Card>
       </div>
 
-      {/* Main Register Table */}
       <div className="bg-card-bg border border-card-border rounded-3xl p-5 shadow-sm">
         {isLoading ? (
           <div className="py-20 flex justify-center items-center gap-2 text-xs font-bold text-muted-text">
@@ -655,7 +624,6 @@ export default function CollectionsPage() {
         )}
       </div>
 
-      {/* Waste Category Manager Card */}
       <Card>
         <CardHeader className="pb-3 border-b border-card-border/60">
           <CardTitle className="text-sm font-extrabold uppercase tracking-wider flex items-center gap-2">
@@ -665,7 +633,6 @@ export default function CollectionsPage() {
           
         </CardHeader>
         <CardContent className="pt-6 space-y-5">
-          {/* Add Category Section */}
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="flex-1">
               <Input
@@ -686,7 +653,6 @@ export default function CollectionsPage() {
             </Button>
           </div>
 
-          {/* Categories Grid List */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {categories.map((c) => {
               const isDefault = ["Food Waste", "Plastic", "Polythene", "Paper", "Glass"].includes(c.name);
@@ -752,7 +718,6 @@ export default function CollectionsPage() {
         </CardContent>
       </Card>
 
-      {/* Modal Dialog: Add Daily Collection */}
       <Modal isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} title="Add Daily Waste Collection" className="max-w-md">
         <form onSubmit={handleSubmit(handleAddCollection)} className="space-y-4">
           <Input
@@ -797,7 +762,6 @@ export default function CollectionsPage() {
         </form>
       </Modal>
 
-      {/* Modal Dialog: Edit Collection */}
       <Modal isOpen={isEditOpen} onClose={() => setIsEditOpen(false)} title="Edit Waste Collection Record" className="max-w-md">
         <form onSubmit={handleSubmit(handleEditCollection)} className="space-y-4">
           <Input
@@ -844,7 +808,6 @@ export default function CollectionsPage() {
         </form>
       </Modal>
 
-      {/* Confirm Dialog: Delete Record */}
       <ConfirmDialog
         isOpen={isDeleteOpen}
         onClose={() => setIsDeleteOpen(false)}

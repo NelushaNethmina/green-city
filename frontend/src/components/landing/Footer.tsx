@@ -16,8 +16,6 @@ export function Footer() {
     <footer className="border-t border-white/10 bg-gradient-to-b from-[#145736] via-[#0F5C3B] to-[#083B29] py-12 relative overflow-hidden">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          
-          {/* Logo & Council Info */}
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2">
               <img src="/logo_new.png" alt="Green City Logo" className="h-10 w-10 object-contain" />
@@ -30,7 +28,6 @@ export function Footer() {
             </p>
           </div>
 
-          {/* Quick Links */}
           <div className="flex flex-col gap-3">
             <h4 className="text-xs font-bold uppercase tracking-wider text-white">
               Navigation
@@ -59,7 +56,6 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Additional Links */}
           <div className="flex flex-col gap-3">
             <h4 className="text-xs font-bold uppercase tracking-wider text-white">
               Community
@@ -88,7 +84,6 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Official Council Portal Links */}
           <div className="flex flex-col gap-3">
             <h4 className="text-xs font-bold uppercase tracking-wider text-white">
               Official Links
@@ -127,7 +122,6 @@ export function Footer() {
 
         </div>
 
-        {/* Divider & Copyright */}
         <div className="border-t border-white/12 mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <span className="text-[10px] font-bold text-white/82 uppercase tracking-wider">
             © 2026 Badulla Municipal Council IT Division. All Rights Reserved.

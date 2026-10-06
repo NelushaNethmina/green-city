@@ -27,7 +27,6 @@ export function About() {
   return (
     <section id="about" className="py-24 bg-muted-bg/30 dark:bg-[#080d0a]/30 relative">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 flex flex-col gap-3">
           <span className="text-xs font-bold uppercase tracking-wider text-primary-green dark:text-accent-green">
             About the Initiative
@@ -40,7 +39,6 @@ export function About() {
           </p>
         </div>
 
-        {/* Info Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-16">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -110,7 +108,6 @@ export function About() {
           </motion.div>
         </div>
 
-        {/* Mission Vision Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {cards.map((c, i) => (
             <motion.div
