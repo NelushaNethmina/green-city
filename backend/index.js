@@ -7,6 +7,7 @@ import vechicleRouter from "./routes/vechicleRouter.js"
 import dailyWasteCollectionRouter from "./routes/dailyWasteCollectionRouter.js"
 import scheduleRouter from "./routes/scheduleRouter.js"
 import requestRouter from "./routes/requestRouter.js"
+import settingRouter from  "./routes/settingRouter.js"
 
 
 
@@ -61,6 +62,7 @@ app.use("/vechicle", vechicleRouter)
 app.use("/dailyWasteCollection", dailyWasteCollectionRouter)
 app.use("/schedule", scheduleRouter)
 app.use("/request", requestRouter)
+app.use("/setting", settingRouter)
 
 mongoose.connect(mongoURI).then(
     ()=>{
