@@ -157,19 +157,30 @@ export default function OverviewPage() {
       toast.error("Failed to load: " + failed.join(", "));
     }
   };
-  const mapBins = useMemo<BinLocation[]>(() => {
+    const mapBins = useMemo<BinLocation[]>(() => {
+    const seen: Record<string, number> = {};
+
     return requests
-      .filter((r) => typeof r.latitude === "number" && typeof r.longitude === "number")
-      .map((r) => ({
-        id: r.id,
-        reporterName: r.residentName,
-        address: r.address,
-        latitude: r.latitude,
-        longitude: r.longitude,
-        wasteType: r.wasteType,
-        status: r.status,
-        createdAt: r.createdAt,
-      }));
+      .filter((r) => r.status !== "Other" && Number.isFinite(r.latitude) && Number.isFinite(r.longitude))
+      .map((r) => {
+        const key = r.latitude.toFixed(4) + "," + r.longitude.toFixed(4);
+        const index = seen[key] || 0;
+        seen[key] = index + 1;
+
+        const angle = index * 2.4;
+        const radius = index === 0 ? 0 : 0.0003 * Math.ceil(index / 6);
+
+        return {
+          id: r.id,
+          reporterName: r.residentName,
+          address: r.address,
+          latitude: r.latitude + Math.sin(angle) * radius,
+          longitude: r.longitude + Math.cos(angle) * radius,
+          wasteType: r.wasteType,
+          status: r.status as BinLocation["status"],
+          createdAt: r.createdAt,
+        } as BinLocation;
+      });
   }, [requests]);
 
   useEffect(() => {
