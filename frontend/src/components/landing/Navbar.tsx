@@ -21,7 +21,6 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Monitor scroll for styling
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
@@ -31,11 +30,10 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Intersection observer to track active section
   useEffect(() => {
     const observerOptions = {
       root: null,
-      rootMargin: "-40% 0px -50% 0px", // triggers when section fills middle of viewport
+      rootMargin: "-40% 0px -50% 0px",
       threshold: 0,
     };
 
@@ -83,7 +81,6 @@ export function Navbar() {
             : "bg-transparent border-transparent shadow-none")
         }
       >
-        {/* Logo */}
        <div
   onClick={() => {
     handleScrollTo("home");
@@ -102,7 +99,6 @@ export function Navbar() {
   </span>
 </div>
 
-        {/* Desktop Nav Items */}
         <nav className="hidden lg:flex items-center gap-1 relative bg-muted-bg/50 border border-card-border/60 rounded-full p-1">
           {navItems.map((item) => {
             const isActive = activeItem === item.id;
@@ -130,13 +126,11 @@ export function Navbar() {
           })}
         </nav>
 
-        {/* Right Corner CTA */}
         <div className="flex items-center gap-3">
           <Link href="/login">
             
           </Link>
           
-          {/* Mobile Menu Toggle Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="lg:hidden p-2 rounded-full border border-card-border bg-card-bg/50 text-muted-text hover:text-foreground hover:bg-muted-bg transition cursor-pointer"
@@ -150,7 +144,6 @@ export function Navbar() {
           </button>
         </div>
 
-        {/* Mobile Dropdown Menu */}
         <AnimatePresence>
           {mobileMenuOpen && (
             <motion.div

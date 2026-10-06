@@ -20,7 +20,6 @@ export function Modal({
   children,
   className,
 }: ModalProps) {
-  // Lock body scroll when modal is active
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -36,7 +35,6 @@ export function Modal({
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Backdrop overlay */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -45,7 +43,6 @@ export function Modal({
             className="fixed inset-0 bg-background/50 backdrop-blur-md"
           />
 
-          {/* Modal frame */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -56,7 +53,6 @@ export function Modal({
               className
             )}
           >
-            {/* Header */}
             <div className="flex items-center justify-between border-b border-card-border pb-4 mb-4">
               <h2 className="text-xl font-extrabold text-gradient-green">
                 {title}
@@ -69,7 +65,6 @@ export function Modal({
               </button>
             </div>
 
-            {/* Children container */}
             <div className="flex-1 overflow-y-auto pr-1 no-scrollbar">
               {children}
             </div>

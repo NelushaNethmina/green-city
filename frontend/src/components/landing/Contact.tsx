@@ -23,7 +23,6 @@ export function Contact() {
 
     setIsLoading(true);
 
-    // Mock feedback post API wait
     setTimeout(() => {
       setIsLoading(false);
       toast.success("Feedback sent! Thank you for helping keep Badulla clean.");
@@ -37,8 +36,6 @@ export function Contact() {
   return (
     <section id="contact" className="py-24 bg-gradient-to-b from-[#FFFFFF] to-[#F6FBF7] relative overflow-hidden">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        
-        {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 flex flex-col gap-3">
           <span className="mx-auto inline-block text-xs font-bold uppercase tracking-wider text-primary-green bg-primary-green/5 border border-primary-green/10 px-4.5 py-1.5 rounded-full">
             Get In Touch
@@ -52,7 +49,6 @@ export function Contact() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-20 xl:gap-28 items-start">
-          {/* Left: Contact Info */}
           <div className="lg:col-span-5 flex flex-col gap-6 justify-between text-foreground">
             <div className="flex flex-col gap-6">
               <h3 className="text-xl font-extrabold text-foreground">
@@ -64,7 +60,6 @@ export function Contact() {
             </div>
 
             <div className="space-y-4 my-6">
-              {/* Address */}
               <div className="flex gap-4 items-start p-4 bg-white/60 border border-card-border/60 rounded-2xl shadow-sm backdrop-blur-sm">
                 <div className="p-2.5 bg-primary-green/5 border border-primary-green/10 rounded-xl text-primary-green">
                   <MapPin className="h-5 w-5" />
@@ -77,7 +72,6 @@ export function Contact() {
                 </div>
               </div>
 
-              {/* Phone */}
               <div className="flex gap-4 items-start p-4 bg-white/60 border border-card-border/60 rounded-2xl shadow-sm backdrop-blur-sm">
                 <div className="p-2.5 bg-primary-green/5 border border-primary-green/10 rounded-xl text-primary-green">
                   <Phone className="h-5 w-5" />
@@ -90,7 +84,6 @@ export function Contact() {
                 </div>
               </div>
 
-              {/* Email */}
               <div className="flex gap-4 items-start p-4 bg-white/60 border border-card-border/60 rounded-2xl shadow-sm backdrop-blur-sm">
                 <div className="p-2.5 bg-primary-green/5 border border-primary-green/10 rounded-xl text-primary-green">
                   <Mail className="h-5 w-5" />
@@ -109,7 +102,6 @@ export function Contact() {
             </div>
           </div>
 
-          {/* Right: Contact Form */}
           <div className="lg:col-span-7">
             <Card className="border border-white/20 bg-white/90 backdrop-blur-md h-full shadow-xl">
               <CardContent className="pt-6">

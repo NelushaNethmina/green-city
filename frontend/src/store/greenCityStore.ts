@@ -2,7 +2,6 @@
 
 import { create } from "zustand";
 
-// Entity Definitions
 export interface BinLocation {
   id: string;
   reporterName: string;
@@ -21,7 +20,7 @@ export interface Driver {
   name: string;
   nic: string;
   phone: string;
-  vehicleNo: string; // Truck Number
+  vehicleNo: string;
   status: "Online" | "Offline";
   currentWard: string;
   assignedRoute?: string;
@@ -50,10 +49,10 @@ export interface DailyCollection {
   date: string;
   category: string;
   weightKg: number;
-  remarks?: string;     // Optional notes entered by the administrator
-  recordedBy: string;   // Auto-set to "Council Admin"
-  createdAt: string;    // Full ISO timestamp
-  updatedAt: string;    // Full ISO timestamp, refreshed on edit
+  remarks?: string;
+  recordedBy: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface WasteCategory {
@@ -110,54 +109,43 @@ interface GreenCityState {
   settings: SystemSettings;
   activityLogs: ActivityLog[];
 
-  // Activity logger helper
   logActivity: (action: string, details: string) => void;
 
-  // Bins CRUD
   addBin: (bin: Omit<BinLocation, "id" | "createdAt">) => void;
   updateBin: (id: string, updates: Partial<BinLocation>) => void;
   deleteBin: (id: string) => void;
   assignDriverToBin: (binId: string, driverId: string) => void;
   collectBin: (binId: string, weightKg: number) => void;
   
-  // Drivers CRUD
   addDriver: (driver: Omit<Driver, "id">) => void;
   updateDriver: (id: string, updates: Partial<Driver>) => void;
   deleteDriver: (id: string) => void;
   toggleDriverStatus: (id: string) => void;
   
-  // Residents CRUD
   addResident: (resident: Omit<ResidentUser, "id" | "createdAt">) => void;
   updateResident: (id: string, updates: Partial<ResidentUser>) => void;
   deleteResident: (id: string) => void;
 
-  // Daily Collections CRUD
   addDailyCollection: (collection: Omit<DailyCollection, "id">) => void;
   updateDailyCollection: (id: string, updates: Partial<DailyCollection>) => void;
   deleteDailyCollection: (id: string) => void;
 
-  // Category Actions
   addCategory: (name: string) => void;
   deleteCategory: (id: string) => void;
 
-  // Route Assignments CRUD
   addRouteAssignment: (assignment: Omit<RouteAssignment, "id">) => void;
   updateRouteAssignment: (id: string, updates: Partial<RouteAssignment>) => void;
   deleteRouteAssignment: (id: string) => void;
 
-  // Notification Actions
   sendNotification: (notification: Omit<NotificationLog, "id" | "createdAt" | "status">) => void;
 
-  // Settings Actions
   updateSettings: (updates: Partial<SystemSettings>) => void;
 
-  // Administrators list
   admins: { id: string; name: string; email: string; role: string; password?: string }[];
   addAdmin: (admin: { name: string; email: string; role: string; password?: string }) => void;
   removeAdmin: (id: string) => void;
 }
 
-// Initial Mock Seed Data
 const initialBins: BinLocation[] = [
   {
     id: "bin_1",
@@ -420,7 +408,6 @@ const initialAdmins = [
   { id: "adm_2", name: "Municipal Health Officer", email: "officer@greencity.lk", role: "Inspector" },
 ];
 
-// Helper to access LocalStorage safely
 const getStoredData = <T,>(key: string, fallback: T): T => {
   if (typeof window === "undefined") return fallback;
   const stored = localStorage.getItem(key);
@@ -455,12 +442,10 @@ export const useGreenCityStore = create<GreenCityState>((set) => ({
   dailyCollections: (() => {
     const data = getStoredData("green_city_daily_collections", initialCollections);
     const migrated = data.map((c) => {
-      // Migrate old combined category names
       let category = c.category;
       if (category === "Plastic / Polythene / Paper / Glass" || category === "Plastic / Paper / Glass") {
         category = "Plastic";
       }
-      // Backfill new fields missing from old localStorage records
       const fallbackTs = c.createdAt || new Date().toISOString();
       return {
         ...c,
@@ -475,9 +460,7 @@ export const useGreenCityStore = create<GreenCityState>((set) => ({
   })(),
   categories: (() => {
     let cats = getStoredData("green_city_categories", initialCategories);
-    // Remove combined category if present
     cats = cats.filter((c) => c.name !== "Plastic / Polythene / Paper / Glass" && c.name !== "Plastic / Paper / Glass");
-    // Ensure all 5 default categories exist
     const defaultNames = ["Food Waste", "Plastic", "Polythene", "Paper", "Glass"];
     defaultNames.forEach((name, index) => {
       if (!cats.some((c) => c.name.toLowerCase() === name.toLowerCase())) {
@@ -517,12 +500,11 @@ export const useGreenCityStore = create<GreenCityState>((set) => ({
           timestamp: new Date().toISOString(),
         },
         ...state.activityLogs,
-      ].slice(0, 50); // Keep last 50 logs
+      ].slice(0, 50);
       saveStoredData("green_city_activity_logs", updated);
       return { activityLogs: updated };
     }),
 
-  // Bins CRUD
   addBin: (newBin) =>
     set((state) => {
       const updated = [
@@ -534,7 +516,6 @@ export const useGreenCityStore = create<GreenCityState>((set) => ({
         },
       ];
       saveStoredData("green_city_bins", updated);
-      // Side effect log
       setTimeout(() => state.logActivity("Waste Request Created", `Address: ${newBin.address}`), 50);
       return { bins: updated };
     }),
@@ -582,7 +563,6 @@ export const useGreenCityStore = create<GreenCityState>((set) => ({
       );
       saveStoredData("green_city_bins", updated);
       
-      // Auto log to daily garbage quantity
       if (bin) {
         const todayStr = new Date().toISOString().split('T')[0];
         const nowStr = new Date().toISOString();
@@ -607,7 +587,6 @@ export const useGreenCityStore = create<GreenCityState>((set) => ({
       return { bins: updated };
     }),
 
-  // Drivers CRUD
   addDriver: (newDriver) =>
     set((state) => {
       const updated = [
@@ -654,7 +633,6 @@ export const useGreenCityStore = create<GreenCityState>((set) => ({
       return { drivers: updated };
     }),
 
-  // Residents CRUD
   addResident: (newResident) =>
     set((state) => {
       const updated = [
@@ -692,7 +670,6 @@ export const useGreenCityStore = create<GreenCityState>((set) => ({
       return { residents: updated };
     }),
 
-  // Daily Collections CRUD
   addDailyCollection: (newCol) =>
     set((state) => {
       const now = new Date().toISOString();
@@ -737,7 +714,6 @@ export const useGreenCityStore = create<GreenCityState>((set) => ({
       return { dailyCollections: updated };
     }),
 
-  // Waste Categories
   addCategory: (name) =>
     set((state) => {
       if (state.categories.find((c) => c.name.toLowerCase() === name.toLowerCase())) {
@@ -770,7 +746,6 @@ export const useGreenCityStore = create<GreenCityState>((set) => ({
       return { categories: updated };
     }),
 
-  // Route Assignments CRUD
   addRouteAssignment: (assignment) =>
     set((state) => {
       const driver = state.drivers.find((d) => d.id === assignment.driverId);
@@ -803,7 +778,6 @@ export const useGreenCityStore = create<GreenCityState>((set) => ({
       return { routeAssignments: updated };
     }),
 
-  // Notification Send
   sendNotification: (newNtf) =>
     set((state) => {
       const updated = [
@@ -820,7 +794,6 @@ export const useGreenCityStore = create<GreenCityState>((set) => ({
       return { notifications: updated };
     }),
 
-  // Settings Actions
   updateSettings: (updates) =>
     set((state) => {
       const updated = { ...state.settings, ...updates };
@@ -829,7 +802,6 @@ export const useGreenCityStore = create<GreenCityState>((set) => ({
       return { settings: updated };
     }),
 
-  // Admin List Actions
   addAdmin: (admin) =>
     set((state) => {
       const updated = [

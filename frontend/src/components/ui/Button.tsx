@@ -30,22 +30,16 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         className={cn(
           "inline-flex items-center justify-center gap-2 font-semibold rounded-full transition-all duration-300 cursor-pointer outline-none active:scale-95 disabled:scale-100 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.03]",
           {
-            // Primary green
             "bg-primary-green text-white hover:bg-primary-green-hover shadow-md hover:shadow-primary-green/20 hover:shadow-lg":
               variant === "primary",
-            // Secondary green
             "bg-secondary-green text-white hover:bg-secondary-green/90 shadow-sm":
               variant === "secondary",
-            // Accent green
             "bg-accent-green text-[#091811] hover:bg-accent-green-hover shadow-sm":
               variant === "accent",
-            // Outline border
             "border-2 border-primary-green/20 text-primary-green hover:bg-primary-green/5 dark:border-accent-green/25 dark:text-accent-green dark:hover:bg-accent-green/5":
               variant === "outline",
-            // Ghost
             "text-muted-text hover:bg-muted-bg hover:text-foreground":
               variant === "ghost",
-            // Danger
             "bg-red-600 text-white hover:bg-red-700 shadow-sm hover:shadow-red-500/20":
               variant === "danger",
           },

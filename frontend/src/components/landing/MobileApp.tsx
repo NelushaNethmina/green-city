@@ -82,36 +82,23 @@ export function MobileApp() {
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-
-          {/* Left Side: Real Mobile App Screens */}
           <div className="flex flex-col items-center justify-center order-2 lg:order-1">
-
-            {/* Phone Frame */}
             <div className="relative w-[280px] h-[560px] bg-black rounded-[42px] p-3 shadow-2xl border-[6px] border-zinc-800 select-none">
-
-              {/* Phone Screen */}
               <div className="relative w-full h-full rounded-[34px] overflow-hidden bg-white border border-zinc-700/30">
-
-                {/* Real App Screenshot */}
                 <img
                   src={appScreens[screenIndex].image}
                   alt={appScreens[screenIndex].title}
                   className="w-full h-full object-cover"
                 />
 
-                {/* Home Indicator */}
                 <div className="absolute bottom-2 left-1/2 -translate-x-1/2 h-1 w-28 bg-black/40 rounded-full z-10" />
-
               </div>
 
-              {/* Speaker / Camera Notch */}
               <div className="absolute top-3.5 left-1/2 -translate-x-1/2 w-28 h-5 bg-black rounded-b-2xl z-20 flex items-center justify-center">
                 <div className="w-10 h-1 bg-zinc-800 rounded-full" />
               </div>
-
             </div>
 
-            {/* Screen Indicator Dots */}
             <div className="flex gap-1.5 mt-6">
               {appScreens.map((_, idx) => (
                 <button
@@ -127,14 +114,11 @@ export function MobileApp() {
               ))}
             </div>
 
-            {/* Active Screen Title */}
             <span className="text-[10px] uppercase font-bold text-muted-text mt-2.5">
               Active: {appScreens[screenIndex].title}
             </span>
-
           </div>
 
-          {/* Right Side: Features List & Details */}
           <div className="flex flex-col gap-6 order-1 lg:order-2">
             <span className="text-xs font-bold uppercase tracking-wider text-primary-green dark:text-accent-green">
               Resident Application
@@ -146,7 +130,6 @@ export function MobileApp() {
               Manage your household waste collection easily. Mark your bin locations, select the correct garbage category, and get notified in real-time when the driver approaches your block.
             </p>
 
-            {/* Features Badge Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
               {featuresList.map((item, idx) => (
                 <div
@@ -163,10 +146,7 @@ export function MobileApp() {
               ))}
             </div>
 
-            {/* Downloads Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 mt-4">
-
-              {/* Download Android APK */}
               <a
                 href="/GreenCity.apk"
                 download="GreenCity.apk"
@@ -181,7 +161,6 @@ export function MobileApp() {
                 </Button>
               </a>
 
-              {/* Download Registration Guide */}
               <a
                 href="/Registration-Guide.pdf"
                 download="Registration-Guide.pdf"
@@ -195,7 +174,6 @@ export function MobileApp() {
                   View Registration Guide
                 </Button>
               </a>
-
             </div>
           </div>
 

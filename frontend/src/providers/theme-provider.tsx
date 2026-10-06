@@ -31,7 +31,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         document.documentElement.classList.toggle("dark", prefersDark);
       }
     } else {
-      // Force light theme for landing page and login
       setTheme("light");
       document.documentElement.classList.remove("dark");
     }
@@ -39,7 +38,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, [pathname]);
 
   const toggleTheme = () => {
-    // Only allow toggling theme on dashboard paths
     if (pathname && pathname.startsWith("/dashboard")) {
       const nextTheme = theme === "light" ? "dark" : "light";
       setTheme(nextTheme);

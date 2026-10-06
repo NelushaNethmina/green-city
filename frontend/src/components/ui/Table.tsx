@@ -54,10 +54,8 @@ export function Table<T extends Record<string, any>>({
   renderMobileCard,
   itemsPerPage = 5,
 }: TableProps<T>) {
-  // Search state
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Filters state
   const [activeFilters, setActiveFilters] = useState<Record<string, string>>(() => {
     const initial: Record<string, string> = {};
     filters.forEach((f) => {
@@ -66,14 +64,11 @@ export function Table<T extends Record<string, any>>({
     return initial;
   });
 
-  // Sort state
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
-  // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Handle Sort Toggle
   const handleSort = (key: string) => {
     if (sortKey === key) {
       if (sortOrder === "asc") {
@@ -88,10 +83,8 @@ export function Table<T extends Record<string, any>>({
     setCurrentPage(1);
   };
 
-  // Filter & Search data
   const filteredData = useMemo(() => {
     return data.filter((item) => {
-      // 1. Filter Check
       const matchesFilters = Object.entries(activeFilters).every(([key, val]) => {
         if (!val) return true;
         return String(item[key]).toLowerCase() === val.toLowerCase();
@@ -99,7 +92,6 @@ export function Table<T extends Record<string, any>>({
 
       if (!matchesFilters) return false;
 
-      // 2. Search Check
       if (!searchQuery) return true;
       if (searchKeys.length === 0) {
         return Object.values(item).some((v) =>
@@ -113,7 +105,6 @@ export function Table<T extends Record<string, any>>({
     });
   }, [data, activeFilters, searchQuery, searchKeys]);
 
-  // Sort data
   const sortedData = useMemo(() => {
     if (!sortKey) return filteredData;
 
@@ -137,7 +128,6 @@ export function Table<T extends Record<string, any>>({
     });
   }, [filteredData, sortKey, sortOrder]);
 
-  // Paginate data
   const totalPages = Math.ceil(sortedData.length / itemsPerPage);
   const paginatedData = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
@@ -151,7 +141,6 @@ export function Table<T extends Record<string, any>>({
 
   return (
     <div className="flex flex-col gap-4 w-full">
-      {/* Search & Filter Header */}
       {(searchKeys.length > 0 || filters.length > 0) && (
         <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
           {searchKeys.length > 0 && (
@@ -193,7 +182,6 @@ export function Table<T extends Record<string, any>>({
         </div>
       )}
 
-      {/* Desktop Grid & Mobile Cards Wrapper */}
       <div className="w-full">
         {isLoading ? (
           <div className="space-y-2 py-4">
@@ -217,7 +205,6 @@ export function Table<T extends Record<string, any>>({
           />
         ) : (
           <>
-            {/* Desktop View */}
             <div className="hidden md:block w-full overflow-x-auto rounded-3xl border border-card-border bg-card-bg/20 backdrop-blur-md">
               <table className="w-full border-collapse text-left text-sm">
                 <thead>
@@ -270,7 +257,6 @@ export function Table<T extends Record<string, any>>({
               </table>
             </div>
 
-            {/* Mobile View */}
             <div className="md:hidden flex flex-col gap-3">
               {paginatedData.map((item, idx) => (
                 <div
@@ -299,7 +285,6 @@ export function Table<T extends Record<string, any>>({
               ))}
             </div>
 
-            {/* Pagination Controls */}
             {totalPages > 1 && (
               <div className="flex items-center justify-between px-2 pt-2 border-t border-card-border/20">
                 <span className="text-[14.5px] text-muted-text font-medium">

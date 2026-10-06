@@ -59,8 +59,6 @@ export function createUser(req,res){
     )
 }
 
-//Login user function 
-
 export function loginUser(req,res){
     const email = req.body.email
     const password = req.body.password

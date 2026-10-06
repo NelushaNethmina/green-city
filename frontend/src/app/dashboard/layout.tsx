@@ -47,7 +47,6 @@ export default function DashboardLayout({
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
-  // Sync auth on mount
   useEffect(() => {
     auth.checkAuth();
   }, []);
@@ -83,15 +82,12 @@ export default function DashboardLayout({
 
   return (
     <div className="relative min-h-screen flex bg-background transition-colors duration-300">
-      
-      {/* 1. Desktop Sidebar */}
       <aside
         className={cn(
           "hidden md:flex flex-col border-r border-sidebar-border bg-sidebar-bg backdrop-blur-md transition-all duration-300 z-30",
           isSidebarCollapsed ? "w-20" : "w-64"
         )}
       >
-        {/* Sidebar Header Logo */}
         <div className="h-16 flex items-center justify-between px-4 border-b border-sidebar-border">
           <div className="flex items-center gap-2 overflow-hidden">
             <img src="/logo_new.png" className="h-19 w-8.5 object-contain shrink-0" alt="Green City Logo" />
@@ -113,7 +109,6 @@ export default function DashboardLayout({
           </button>
         </div>
 
-        {/* Sidebar Navigation */}
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto no-scrollbar">
           {menuItems.map((item) => {
             const isActive = pathname === item.href;
@@ -136,7 +131,6 @@ export default function DashboardLayout({
           })}
         </nav>
 
-        {/* Sidebar Footer User Details */}
         <div className="p-4 border-t border-sidebar-border flex flex-col gap-3">
           <div
             onClick={() => router.push("/dashboard/settings?focus=profile")}
@@ -172,15 +166,12 @@ export default function DashboardLayout({
         </div>
       </aside>
 
-      {/* 2. Mobile Drawer Sidebar */}
       {isMobileOpen && (
         <div className="md:hidden fixed inset-0 z-40 flex">
-          {/* Backdrop */}
           <div
             onClick={() => setIsMobileOpen(false)}
             className="fixed inset-0 bg-background/50 backdrop-blur-sm"
           />
-          {/* Drawer Panel */}
           <aside className="relative flex flex-col w-64 max-w-xs bg-sidebar-bg border-r border-sidebar-border z-10 p-4">
             <div className="flex items-center justify-between pb-4 border-b border-sidebar-border mb-4">
               <div className="flex items-center gap-2">
@@ -252,13 +243,10 @@ export default function DashboardLayout({
         </div>
       )}
 
-      {/* 3. Main Workspace Container */}
       <div className="flex-1 flex flex-col min-w-0 overflow-y-auto max-h-screen bg-muted-bg transition-colors duration-300">
         
-        {/* Header bar */}
         <header className="h-16 border-b border-sidebar-border bg-sidebar-bg dark:bg-sidebar-bg/60 dark:backdrop-blur-md flex items-center justify-between px-4 sm:px-6 shrink-0 sticky top-0 z-20">
           
-          {/* Left: Mobile Toggle & Breadcrumbs */}
           <div className="flex items-center gap-3">
             <button
               onClick={() => setIsMobileOpen(true)}
@@ -267,7 +255,6 @@ export default function DashboardLayout({
               <Menu className="h-5 w-5" />
             </button>
 
-            {/* Breadcrumb path rendering */}
             <nav className="hidden sm:flex items-center gap-1.5 text-[13px] font-bold text-muted-text uppercase tracking-wider">
               {getBreadcrumbs().map((b, idx) => (
                 <React.Fragment key={idx}>
@@ -284,9 +271,7 @@ export default function DashboardLayout({
             </nav>
           </div>
 
-          {/* Right: Theme, Profile */}
           <div className="flex items-center gap-3">
-            {/* Theme switcher */}
             <button
               onClick={toggleTheme}
               className="p-2 rounded-full border border-card-border bg-card-bg text-muted-text hover:text-foreground hover:bg-muted-bg/50 transition cursor-pointer"
@@ -299,7 +284,6 @@ export default function DashboardLayout({
               )}
             </button>
 
-            {/* Quick Profile */}
             <img
               onClick={() => router.push("/dashboard/settings?focus=profile")}
               src={auth.user?.profilePic || "https://images..com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=100&q=80"}
@@ -310,7 +294,6 @@ export default function DashboardLayout({
 
         </header>
 
-        {/* Content Body */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8">
           {children}
         </main>

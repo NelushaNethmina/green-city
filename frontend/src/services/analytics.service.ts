@@ -20,7 +20,6 @@ export const analyticsService = {
     const store = useGreenCityStore.getState();
     const collections = await collectionService.getDailyCollections();
 
-    // ── Category Distribution (from real daily collection records) ─────────
     const catTotals: Record<string, number> = {};
     collections.forEach((c) => {
       catTotals[c.category] = (catTotals[c.category] || 0) + c.weightKg;
@@ -29,17 +28,14 @@ export const analyticsService = {
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value);
 
-    // ── Most Collected Category ────────────────────────────────────────────
     const mostCollectedCategory = categoryDistribution[0]?.name || "Food Waste";
 
-    // ── Monthly Totals (from real records, grouped by calendar month) ──────
     const monthlyTotals: Record<number, number> = {};
     collections.forEach((c) => {
-      const month = new Date(c.date).getMonth(); // 0–11
+      const month = new Date(c.date).getMonth();
       monthlyTotals[month] = (monthlyTotals[month] || 0) + c.weightKg;
     });
 
-    // Determine which months to show based on timeframe
     const currentMonth = new Date().getMonth();
     let monthSlice: number[];
     if (timeframe === "daily" || timeframe === "weekly") {
@@ -47,11 +43,9 @@ export const analyticsService = {
     } else if (timeframe === "yearly") {
       monthSlice = Array.from({ length: 12 }, (_, i) => i);
     } else {
-      // monthly: last 6 calendar months
       monthSlice = Array.from({ length: 6 }, (_, i) => (currentMonth - 5 + i + 12) % 12);
     }
 
-    // Target = 110% of the average monthly collection across all recorded months
     const monthValues = Object.values(monthlyTotals);
     const avgMonthly = monthValues.length > 0
       ? monthValues.reduce((s, v) => s + v, 0) / monthValues.length
@@ -64,10 +58,8 @@ export const analyticsService = {
       target,
     }));
 
-    // ── Ward Performance (bins-based — preserved for analytics page) ───────
     const factor = timeframe === "daily" ? 0.3 : timeframe === "weekly" ? 0.7 : timeframe === "yearly" ? 12 : 1;
 
-    // ── Collection Efficiency (from bin statuses, preserved) ──────────────
     let routes: any[] = [];
     try {
       routes = await routeService.getAll();
@@ -77,7 +69,6 @@ export const analyticsService = {
       routes.length > 0 ? Math.round((completedCount / routes.length) * 100) : 0;
       
 
-    // ── Most Active Area (from bins, preserved) ────────────────────────────
     const wardCounts: Record<string, number> = {};
     store.bins.forEach((b) => {
       const ward = b.address.includes("Bandarawela") ? "Ward 02" : "Ward 03";

@@ -56,8 +56,6 @@ export function GettingStarted() {
   return (
     <section id="getting-started" className="py-24 bg-gradient-to-b from-[#FFFFFF] to-[#E8F2EC] relative overflow-hidden">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        
-        {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-20 flex flex-col gap-3">
           <span className="text-xs font-bold uppercase tracking-wider text-primary-green">
             Onboarding Timeline
@@ -70,12 +68,8 @@ export function GettingStarted() {
           </p>
         </div>
 
-        {/* Two-column Layout: Timeline Left, Illustration Right */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
-          
-          {/* Left Column: Vertical Timeline */}
           <div className="relative pl-8 md:pl-10 space-y-8">
-            {/* Vertical Line */}
             <div className="absolute left-4 md:left-4 top-2 bottom-2 w-0.5 bg-primary-green/10" />
 
             {steps.map((step, idx) => (
@@ -87,7 +81,6 @@ export function GettingStarted() {
                 transition={{ duration: 0.5, delay: idx * 0.05 }}
                 className="relative"
               >
-                {/* Icon Node Center */}
                 <div className="absolute -left-8 md:-left-10 top-1.5 -translate-x-1/2 z-10 flex items-center justify-center">
                   <div className="h-8 w-8 rounded-full bg-primary-green border-4 border-background flex items-center justify-center shadow-sm animate-pulse-soft">
                     {step.icon}
@@ -104,7 +97,6 @@ export function GettingStarted() {
             ))}
           </div>
 
-          {/* Right Column: Premium Illustration (Sticky) */}
           <div className="lg:sticky lg:top-32 flex justify-center items-center h-full min-h-[450px]">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
@@ -113,10 +105,8 @@ export function GettingStarted() {
               transition={{ duration: 0.8 }}
               className="relative w-full max-w-xl aspect-square flex items-center justify-center p-4"
             >
-              {/* Soft background green glow blobs */}
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary-green/8 to-transparent rounded-full blur-3xl -z-10 pointer-events-none" />
               
-              {/* Orbiting floating eco badges */}
               <div className="absolute top-12 left-8 p-3 bg-white/95 backdrop-blur-md rounded-2xl border border-primary-green/10 shadow-md animate-float z-10">
                 <Leaf className="h-5 w-5 text-primary-green" />
               </div>
@@ -127,7 +117,6 @@ export function GettingStarted() {
                 <MapPin className="h-4.5 w-4.5 text-[#2E8B57]" />
               </div>
 
-              {/* Generated Illustration */}
               <img
                 src="/getting-started-illustration-new.png?v=1"
                 alt="Illustrated Resident using Green City"
