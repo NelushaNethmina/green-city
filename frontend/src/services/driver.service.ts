@@ -84,28 +84,30 @@ export const driverService = {
     }
   },
 
-  update: async (id: string, updates: Partial<Driver>): Promise<void> => {
+    update: async (id: string, updates: Partial<Driver>): Promise<void> => {
     const body: any = {};
     if (updates.name) {
-      const names = updates.name.split(" ");
+      const names = updates.name.trim().split(" ");
       body.firstName = names[0];
       body.lastName = names.slice(1).join(" ") || "-";
     }
     if (updates.nic) body.nic = updates.nic;
     if (updates.phone) body.phone = updates.phone;
-    if (updates.status) body.status = updates.status === "Online" ? "active" : "inactive";
-    await axios.put(url + "/users/" + id, body, config());
 
-    if (updates.vehicleNo && updates.vehicleNo !== "-") {
-      try {
-        const all = await axios.get(url + "/users", config());
+    try {
+      await axios.put(url + "/users/" + id, body, config());
+
+      if (updates.vehicleNo && updates.vehicleNo !== "-") {
+        const all = await axios.get(url + "/users?role=driver", config());
         const u = all.data.find((x: any) => x._id === id);
         await axios.put(
           url + "/vechicle/" + updates.vehicleNo + "/assign-driver",
           { email: u.email },
           config()
         );
-      } catch {}
+      }
+    } catch (err) {
+      throw new Error(errorMessage(err, "Failed to update driver."));
     }
   },
 

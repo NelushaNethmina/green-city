@@ -514,8 +514,9 @@ export async function getDriverLocations(req,res){
     try{
         const drivers = await User.find({
             role : "driver",
-            "currentLocation.latitude" : {$ne : null}
-        }).select("firstName lastName status currentLocation locationUpdatedAt updatedAt")
+            "currentLocation.latitude" : {$ne : null},
+            locationUpdatedAt : {$ne : null}
+        }).select("firstName lastName status currentLocation locationUpdatedAt")
 
         const vechicles = await Vechicle.find({
             assignedDriver : {$in : drivers.map((d)=>d._id)}
@@ -531,7 +532,7 @@ export async function getDriverLocations(req,res){
                 status : driver.status,
                 latitude : driver.currentLocation.latitude,
                 longitude : driver.currentLocation.longitude,
-                updatedAt : driver.locationUpdatedAt || driver.updatedAt
+                updatedAt : driver.locationUpdatedAt
             }
         })
 

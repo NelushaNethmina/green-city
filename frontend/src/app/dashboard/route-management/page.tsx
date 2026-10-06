@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { Plus, Edit3, Trash2, CheckCircle2, Navigation, Loader2 } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { Plus, Edit3, Trash2, Navigation, Loader2 } from "lucide-react";
+import { useForm, FieldErrors } from "react-hook-form";
 import { toast } from "sonner";
 import { RouteAssignment, Driver, WasteCategory } from "@/store/greenCityStore";
 import { routeService } from "@/services/route.service";
@@ -22,7 +22,10 @@ interface RouteFormData {
   date: string;
   category: string;
   estimatedDistanceKm: string;
-  status: "Pending" | "Active" | "Completed";
+}
+
+function today() {
+  return new Date().toLocaleDateString("en-CA");
 }
 
 export default function RouteManagementPage() {
@@ -30,6 +33,7 @@ export default function RouteManagementPage() {
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [categories, setCategories] = useState<WasteCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
   const [isOpen, setIsOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -40,26 +44,26 @@ export default function RouteManagementPage() {
   const {
     register,
     handleSubmit,
-    setValue,
     reset,
     formState: { errors },
   } = useForm<RouteFormData>({
     defaultValues: {
       driverId: "",
       routeName: "",
-      date: new Date().toISOString().split("T")[0],
+      date: today(),
       category: "Food Waste",
       estimatedDistanceKm: "12.5",
-      status: "Pending",
     },
   });
 
   const loadAll = async () => {
     setIsLoading(true);
     try {
-      const rData = await routeService.getAll();
-      const dData = await driverService.getAll();
-      const cData = await collectionService.getCategories();
+      const [rData, dData, cData] = await Promise.all([
+        routeService.getAll(),
+        driverService.getAll(),
+        collectionService.getCategories(),
+      ]);
       setRoutes(rData);
       setDrivers(dData);
       setCategories(cData);
@@ -74,59 +78,75 @@ export default function RouteManagementPage() {
     loadAll();
   }, []);
 
+  const driverOptions = useMemo(() => {
+    return drivers
+      .filter((d) => d.vehicleNo && d.vehicleNo !== "-")
+      .map((d) => ({
+        value: d.id,
+        label: `${d.name} (${d.vehicleNo})`,
+      }));
+  }, [drivers]);
+
   const handleOpenAdd = () => {
     setEditingRoute(null);
     reset({
-      driverId: drivers.find((d) => d.status === "Online" && d.vehicleNo && d.vehicleNo !== "-")?.id || "",
+      driverId: driverOptions[0]?.value || "",
       routeName: "",
-      date: new Date().toISOString().split("T")[0],
+      date: today(),
       category: categories[0]?.name || "Food Waste",
       estimatedDistanceKm: "12.5",
-      status: "Pending",
     });
     setIsOpen(true);
   };
 
   const handleOpenEdit = (route: RouteAssignment) => {
     setEditingRoute(route);
-    setValue("driverId", route.driverId);
-    setValue("routeName", route.routeName || "");
-    setValue("date", route.date);
-    setValue("category", route.category);
-    setValue("estimatedDistanceKm", String(route.estimatedDistanceKm));
-    setValue("status", route.status);
+    reset({
+      driverId: route.driverId,
+      routeName: route.routeName || "",
+      date: route.date,
+      category: route.category,
+      estimatedDistanceKm: String(route.estimatedDistanceKm),
+    });
     setIsOpen(true);
   };
 
   const onSubmit = async (data: RouteFormData) => {
+    const distance = parseFloat(data.estimatedDistanceKm) || 10;
+    setIsSaving(true);
     try {
-      const payload = {
-        ...data,
-        estimatedDistanceKm: parseFloat(data.estimatedDistanceKm) || 10,
-      };
       if (editingRoute) {
-        await routeService.update(editingRoute.id, payload);
+        await routeService.update(editingRoute.id, {
+          driverId: data.driverId,
+          routeName: data.routeName,
+          date: data.date,
+          category: data.category,
+          estimatedDistanceKm: distance,
+        });
         toast.success("Route assignment details modified.");
       } else {
-        await routeService.create(payload);
-        toast.success("New route dispatch successfully scheduled.");
+        await routeService.create({
+          driverId: data.driverId,
+          routeName: data.routeName,
+          date: data.date,
+          category: data.category,
+          estimatedDistanceKm: distance,
+          status: "Pending",
+        });
+        toast.success("New route successfully scheduled.");
       }
       setIsOpen(false);
-      reset();
       loadAll();
     } catch (err: any) {
       toast.error(err.message || "Failed to update route assignments.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  const handleCompleteRoute = async (route: RouteAssignment) => {
-    try {
-      await routeService.update(route.id, { status: "Completed" });
-      toast.success("Route marked as Completed.");
-      loadAll();
-    } catch (err: any) {
-      toast.error(err.message || "Failed to update route status.");
-    }
+  const onInvalid = (formErrors: FieldErrors<RouteFormData>) => {
+    const first = Object.values(formErrors)[0] as { message?: string } | undefined;
+    toast.error((first && first.message) || "Please check the form fields.");
   };
 
   const handleDeleteConfirm = async () => {
@@ -143,18 +163,12 @@ export default function RouteManagementPage() {
     }
   };
 
-  const activeDriverOptions = useMemo(() => {
-    return drivers
-      .filter((d) => d.status === "Online" && d.vehicleNo && d.vehicleNo !== "-")
-      .map((d) => ({
-        value: d.id,
-        label: `${d.name} (${d.vehicleNo})`,
-      }));
-  }, [drivers]);
-
-  const totalActiveDistance = useMemo(() => {
-    const active = routes.filter((r) => r.status === "Active" || r.status === "Pending");
-    return active.reduce((sum, r) => sum + r.estimatedDistanceKm, 0).toFixed(1);
+  const upcomingDistance = useMemo(() => {
+    const t = today();
+    return routes
+      .filter((r) => r.date >= t)
+      .reduce((sum, r) => sum + r.estimatedDistanceKm, 0)
+      .toFixed(1);
   }, [routes]);
 
   const columns: Column<RouteAssignment>[] = [
@@ -196,36 +210,10 @@ export default function RouteManagementPage() {
       render: (item) => <span>{item.estimatedDistanceKm} Km</span>,
     },
     {
-      key: "status",
-      header: "Dispatch Status",
-      sortable: true,
-      render: (item) => {
-        const variant =
-          item.status === "Completed"
-            ? "success"
-            : item.status === "Active"
-            ? "info"
-            : "warning";
-        return <Badge variant={variant}>{item.status}</Badge>;
-      },
-    },
-    {
       key: "actions",
       header: "Actions",
       render: (item) => (
         <div className="flex items-center gap-2">
-          {item.status !== "Completed" && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleCompleteRoute(item)}
-              className="p-1 h-7 w-7 rounded-full text-green-500 hover:bg-green-500/5"
-              title="Complete Dispatch"
-            >
-              <CheckCircle2 className="h-3.5 w-3.5" />
-            </Button>
-          )}
-
           <Button
             variant="ghost"
             size="sm"
@@ -258,6 +246,9 @@ export default function RouteManagementPage() {
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-xl font-extrabold text-foreground">Route Management</h2>
+          <p className="text-xs text-muted-text mt-0.5">
+            Assign trucks to routes. Drivers see the pending resident requests of the route&apos;s waste category in the mobile app.
+          </p>
         </div>
         <Button onClick={handleOpenAdd} variant="primary" size="sm" className="text-xs shrink-0 cursor-pointer">
           <Plus className="h-4 w-4 mr-1.5" />
@@ -270,8 +261,8 @@ export default function RouteManagementPage() {
           <Navigation className="h-5 w-5 animate-pulse" />
         </div>
         <div>
-          <span className="text-[10px] font-bold text-muted-text uppercase tracking-wider block">Total active route distance</span>
-          <span className="text-lg font-black text-foreground mt-0.5 block">{totalActiveDistance} Km</span>
+          <span className="text-[10px] font-bold text-muted-text uppercase tracking-wider block">Total upcoming route distance</span>
+          <span className="text-lg font-black text-foreground mt-0.5 block">{upcomingDistance} Km</span>
         </div>
       </div>
 
@@ -279,7 +270,7 @@ export default function RouteManagementPage() {
         {isLoading ? (
           <div className="py-20 flex justify-center items-center gap-2 text-xs font-bold text-muted-text">
             <Loader2 className="h-5 w-5 animate-spin text-primary-green" />
-            Loading Route Dispatches...
+            Loading Routes...
           </div>
         ) : (
           <Table
@@ -287,7 +278,7 @@ export default function RouteManagementPage() {
             data={routes}
             searchKeys={["category", "driverId", "routeName"]}
             searchPlaceholder="Search by route or waste class..."
-            emptyTitle="No route dispatches scheduled"
+            emptyTitle="No routes scheduled"
             emptyDescription="Click Assign Route to schedule a truck collection."
             itemsPerPage={6}
           />
@@ -300,10 +291,10 @@ export default function RouteManagementPage() {
         title={editingRoute ? "Edit Route Details" : "Assign Collection Route"}
         className="max-w-md"
       >
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-4">
           <Select
             label="Select Driver (with assigned truck) *"
-            options={activeDriverOptions}
+            options={driverOptions}
             error={errors.driverId?.message}
             {...register("driverId", { required: "Driver selection is required." })}
           />
@@ -330,22 +321,13 @@ export default function RouteManagementPage() {
             error={errors.estimatedDistanceKm?.message}
             {...register("estimatedDistanceKm", { required: "Estimated distance is required." })}
           />
-          <Select
-            label="Status *"
-            options={[
-              { value: "Pending", label: "Pending" },
-              { value: "Active", label: "Active Dispatch" },
-              { value: "Completed", label: "Completed Dispatch" },
-            ]}
-            {...register("status")}
-          />
 
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-card-border">
             <Button variant="ghost" size="sm" type="button" onClick={() => setIsOpen(false)}>
               Cancel
             </Button>
-            <Button variant="primary" size="sm" type="submit">
-              {editingRoute ? "Save Changes" : "Assign Route"}
+            <Button variant="primary" size="sm" type="submit" disabled={isSaving}>
+              {isSaving ? "Saving..." : editingRoute ? "Save Changes" : "Assign Route"}
             </Button>
           </div>
         </form>
@@ -356,7 +338,7 @@ export default function RouteManagementPage() {
         onClose={() => setIsDeleteOpen(false)}
         onConfirm={handleDeleteConfirm}
         title="Delete Route Assignment"
-        description="Are you sure you want to permanently delete this route assignment log? This action cannot be undone."
+        description="Are you sure you want to permanently delete this route assignment? This action cannot be undone."
         confirmText="Permanently Delete"
       />
     </div>

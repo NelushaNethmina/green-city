@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Plus, Edit3, Trash2, Power, PowerOff, Download, Loader2 } from "lucide-react";
-import { useForm } from "react-hook-form";
+import React, { useState, useEffect, useMemo } from "react";
+import { Plus, Edit3, Trash2, Download, Loader2 } from "lucide-react";
+import { useForm, FieldErrors } from "react-hook-form";
 import { toast } from "sonner";
 import { Driver } from "@/store/greenCityStore";
 import { driverService } from "@/services/driver.service";
@@ -18,21 +18,37 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 
 interface DriverFormData {
-  email: string;
-  password: string;
   name: string;
   nic: string;
   phone: string;
+  email: string;
+  password: string;
   vehicleNo: string;
   currentWard: string;
   status: "Online" | "Offline";
 }
 
+const ONLINE_WITHIN_SECONDS = 60;
+const PRESENCE_REFRESH_MS = 10000;
+
+const emptyForm: DriverFormData = {
+  name: "",
+  nic: "",
+  phone: "",
+  email: "",
+  password: "",
+  vehicleNo: "",
+  currentWard: "Badulla Ward 03",
+  status: "Online",
+};
+
 export default function DriversPage() {
   const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [onlineIds, setOnlineIds] = useState<string[]>([]);
   const [availableTrucks, setAvailableTrucks] = useState<Truck[]>([]);
   const [truckRefresh, setTruckRefresh] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
   const [isOpen, setIsOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -43,35 +59,25 @@ export default function DriversPage() {
   const {
     register,
     handleSubmit,
-    setValue,
     reset,
     formState: { errors },
-  } = useForm<DriverFormData>({
-    defaultValues: {
-      email: "", 
-      password: "",
-      name: "",
-      nic: "",
-      phone: "",
-      vehicleNo: "",
-      currentWard: "Badulla Ward 03",
-      status: "Online",
-    },
-  });
+  } = useForm<DriverFormData>({ defaultValues: emptyForm });
 
   const loadTrucks = async (currentTruck?: string) => {
     try {
-      setAvailableTrucks(await vehicleService.getAvailable(currentTruck));
+      const trucks = await vehicleService.getAvailable(currentTruck);
+      setAvailableTrucks(trucks);
+      return trucks;
     } catch {
       setAvailableTrucks([]);
+      return [];
     }
   };
 
   const loadDrivers = async () => {
     setIsLoading(true);
     try {
-      const data = await driverService.getAll();
-      setDrivers(data);
+      setDrivers(await driverService.getAll());
       setTruckRefresh((n) => n + 1);
     } catch {
       toast.error("Failed to load drivers database.");
@@ -85,60 +91,90 @@ export default function DriversPage() {
     loadTrucks();
   }, []);
 
+  useEffect(() => {
+    const refreshPresence = async () => {
+      if (document.hidden) return;
+      try {
+        const locations = await driverService.getLocations();
+        const ids = locations
+          .filter((l) => {
+            const t = new Date(l.updatedAt).getTime();
+            return Number.isFinite(t) && Date.now() - t < ONLINE_WITHIN_SECONDS * 1000;
+          })
+          .map((l) => l.id)
+          .sort();
+        setOnlineIds((prev) => (prev.join(",") === ids.join(",") ? prev : ids));
+      } catch {}
+    };
+
+    refreshPresence();
+    const timer = setInterval(refreshPresence, PRESENCE_REFRESH_MS);
+    return () => clearInterval(timer);
+  }, []);
+
+  const tableData = useMemo<Driver[]>(() => {
+    return drivers.map((d) => ({
+      ...d,
+      status: onlineIds.includes(d.id) ? "Online" : "Offline",
+    }));
+  }, [drivers, onlineIds]);
+
   const handleOpenAdd = () => {
     setEditingDriver(null);
-    loadTrucks();
-    reset({
-      email: "",
-      password: "",
-      name: "",
-      nic: "",
-      phone: "",
-      vehicleNo: "",
-      currentWard: "Badulla Ward 03",
-      status: "Online",
-    });
+    reset(emptyForm);
     setIsOpen(true);
+    loadTrucks();
   };
 
   const handleOpenEdit = async (driver: Driver) => {
     setEditingDriver(driver);
     await loadTrucks(driver.vehicleNo);
-    setValue("name", driver.name);
-    setValue("nic", driver.nic || "");
-    setValue("phone", driver.phone);
-    setValue("vehicleNo", driver.vehicleNo === "-" ? "" : driver.vehicleNo);
-    setValue("currentWard", driver.currentWard);
-    setValue("status", driver.status);
+    reset({
+      ...emptyForm,
+      name: driver.name,
+      nic: driver.nic || "",
+      phone: driver.phone,
+      vehicleNo: driver.vehicleNo === "-" ? "" : driver.vehicleNo,
+      currentWard: driver.currentWard,
+    });
     setIsOpen(true);
   };
 
   const onSubmit = async (data: DriverFormData) => {
+    setIsSaving(true);
     try {
       if (editingDriver) {
-        await driverService.update(editingDriver.id, data);
+        await driverService.update(editingDriver.id, {
+          name: data.name.trim(),
+          nic: data.nic.trim(),
+          phone: data.phone.trim(),
+          vehicleNo:
+            data.vehicleNo && data.vehicleNo !== editingDriver.vehicleNo ? data.vehicleNo : undefined,
+        });
         toast.success("Driver details updated successfully.");
       } else {
-        await driverService.create(data);
+        await driverService.create({
+          ...data,
+          name: data.name.trim(),
+          nic: data.nic.trim(),
+          phone: data.phone.trim(),
+          email: data.email.trim(),
+        });
         toast.success("New driver registered successfully.");
       }
       setIsOpen(false);
-      reset();
       loadDrivers();
       loadTrucks();
     } catch (err: any) {
       toast.error(err.message || "Error processing driver details.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  const handleToggleStatus = async (driver: Driver) => {
-    try {
-      await driverService.toggleStatus(driver.id);
-      toast.success(`Driver status changed.`);
-      loadDrivers();
-    } catch (err: any) {
-      toast.error(err.message || "Error toggling duty status.");
-    }
+  const onInvalid = (formErrors: FieldErrors<DriverFormData>) => {
+    const first = Object.values(formErrors)[0] as { message?: string } | undefined;
+    toast.error((first && first.message) || "Please check the form fields.");
   };
 
   const handleDeleteConfirm = async () => {
@@ -157,22 +193,8 @@ export default function DriversPage() {
   };
 
   const handleExportCSV = () => {
-    const headers = [
-      "Driver Name",
-      "NIC",
-      "Phone Number",
-      "Truck Number",
-      "Duty Status",
-      "Active Ward",
-    ];
-    const rows = drivers.map((d) => [
-      d.name,
-      d.nic,
-      d.phone,
-      d.vehicleNo,
-      d.status,
-      d.currentWard,
-    ]);
+    const headers = ["Driver Name", "Truck Number", "NIC", "Phone Number", "Duty Status"];
+    const rows = tableData.map((d) => [d.name, d.vehicleNo, d.nic, d.phone, d.status]);
     reportService.exportToCSV(headers, rows, "GreenCity_Drivers_Report");
   };
 
@@ -198,40 +220,19 @@ export default function DriversPage() {
       header: "Phone Number",
       sortable: true,
     },
-    
     {
       key: "status",
       header: "Duty Status",
       sortable: true,
-      render: (item) => {
-        return (
-          <Badge variant={item.status === "Online" ? "success" : "error"}>
-            {item.status}
-          </Badge>
-        );
-      },
+      render: (item) => (
+        <Badge variant={item.status === "Online" ? "success" : "default"}>{item.status}</Badge>
+      ),
     },
     {
       key: "actions",
       header: "Actions",
       render: (item) => (
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleToggleStatus(item)}
-            className={`p-1 h-7 w-7 rounded-full transition-colors ${
-              item.status === "Online" ? "text-amber-500 hover:bg-amber-500/5" : "text-green-500 hover:bg-green-500/5"
-            }`}
-            title={item.status === "Online" ? "Mark Offline" : "Mark Online"}
-          >
-            {item.status === "Online" ? (
-              <PowerOff className="h-3.5 w-3.5" />
-            ) : (
-              <Power className="h-3.5 w-3.5" />
-            )}
-          </Button>
-
           <Button
             variant="ghost"
             size="sm"
@@ -264,6 +265,9 @@ export default function DriversPage() {
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-xl font-extrabold text-foreground">Driver Management</h2>
+          <p className="text-xs text-muted-text mt-0.5">
+            Register drivers and assign trucks. Duty status is shown live from the driver&apos;s mobile app.
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <Button onClick={handleExportCSV} variant="outline" size="sm" className="text-xs shrink-0 cursor-pointer">
@@ -286,9 +290,9 @@ export default function DriversPage() {
         ) : (
           <Table
             columns={columns}
-            data={drivers}
-            searchKeys={["name", "vehicleNo", "nic", "currentWard"]}
-            searchPlaceholder="Search by name, vehicle, NIC, or ward..."
+            data={tableData}
+            searchKeys={["name", "vehicleNo", "nic"]}
+            searchPlaceholder="Search by name, truck or NIC..."
             emptyTitle="No drivers found"
             emptyDescription="Click Add Driver to register a crew member."
             itemsPerPage={6}
@@ -304,7 +308,7 @@ export default function DriversPage() {
         title={editingDriver ? "Edit Driver Details" : "Register New Driver"}
         className="max-w-md"
       >
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-4">
           <Input
             label="Driver Name *"
             placeholder="Kasun Perera"
@@ -321,10 +325,9 @@ export default function DriversPage() {
             label="Mobile Number *"
             placeholder="077-123-4567"
             error={errors.phone?.message}
-            {...register("phone", {
-              required: "Phone number is required.",
-            })}
+            {...register("phone", { required: "Phone number is required." })}
           />
+
           {!editingDriver && (
             <>
               <Input
@@ -346,34 +349,46 @@ export default function DriversPage() {
               />
             </>
           )}
+
           <Select
-            label="Truck Number *"
+            label={editingDriver ? "Truck Number" : "Truck Number *"}
             options={[
-              { value: "", label: availableTrucks.length === 0 ? "No available trucks" : "Select an available truck" },
+              {
+                value: "",
+                label:
+                  availableTrucks.length === 0
+                    ? "No available trucks"
+                    : editingDriver
+                    ? "Keep current truck"
+                    : "Select an available truck",
+              },
               ...availableTrucks.map((t) => ({
                 value: t.vechicleNumber,
                 label: t.vechicleNumber + " (" + t.vechicleType + ")",
               })),
             ]}
             error={errors.vehicleNo?.message}
-            {...register("vehicleNo", { required: "Please select a truck." })}
+            {...register("vehicleNo", {
+              required: editingDriver ? false : "Please select a truck.",
+            })}
           />
-  
           <Select
-            label="Duty Status *"
+            label="Designated Ward Limit *"
             options={[
-              { value: "Online", label: "Online" },
-              { value: "Offline", label: "Offline" },
+              { value: "Badulla Ward 01", label: "Badulla Ward 01 (Central)" },
+              { value: "Badulla Ward 02", label: "Badulla Ward 02 (Eastern)" },
+              { value: "Badulla Ward 03", label: "Badulla Ward 03 (Southern)" },
+              { value: "Badulla Ward 04", label: "Badulla Ward 04 (Northern)" },
             ]}
-            {...register("status")}
+            {...register("currentWard")}
           />
 
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-card-border">
             <Button variant="ghost" size="sm" type="button" onClick={() => setIsOpen(false)}>
               Cancel
             </Button>
-            <Button variant="primary" size="sm" type="submit">
-              {editingDriver ? "Save Changes" : "Register Driver"}
+            <Button variant="primary" size="sm" type="submit" disabled={isSaving}>
+              {isSaving ? "Saving..." : editingDriver ? "Save Changes" : "Register Driver"}
             </Button>
           </div>
         </form>
@@ -384,7 +399,7 @@ export default function DriversPage() {
         onClose={() => setIsDeleteOpen(false)}
         onConfirm={handleDeleteConfirm}
         title="Delete Driver Profile"
-        description={`Are you sure you want to permanently delete the profile of "${selectedDriver?.name}"? `}
+        description={`Are you sure you want to permanently delete the profile of "${selectedDriver?.name}"? A driver who is assigned to a route cannot be deleted. The driver's truck will become available again.`}
         confirmText="Permanently Delete"
       />
     </div>
